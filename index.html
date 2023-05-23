@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canvas Sidescroller</title>
+    <script src="perlin.js"></script>
+    <style>
+        canvas {
+            display: block;
+            margin: auto;
+            background-color: skyblue;
+        }
+    </style>
+        
+</head>
+<body>
+    <canvas id="gameCanvas" width="800" height="400"></canvas>
+    <div id="scores">
+        <p id="scorePlayer1">Player 1 Score: 0</p>
+        <p id="scorePlayer2">Player 2 Score: 0</p>
+    </div>
+    <button id="editButton">Edit Map</button>
+    <div id="edit-tools" style="display: none;">
+        <br>
+        <input type="checkbox" id="architectureToggle" name="architectureToggle">
+        <label for="architectureToggle">Toggle Architecture</label>
+        <br>
+        <input type="range" id="bgSlider" min="0" max="255" value="0" class="slider">
+        <label for="bgSlider">Background Brightness</label>
+        <br>
+        <input type="checkbox" id="gradientCheckbox" name="gradientCheckbox">
+        <label for="gradientCheckbox">Use Gradient</label>
+        <br>
+        <input type="checkbox" id="jaggyCheckbox" name="jaggyCheckbox">
+        <label for="jaggyCheckbox">Rough Edges</label>
+        <br>
+        <div  id="jaggyControls" style="display: none;">
+            <div>
+                <label for="sections">Roughness number of sections</label>
+                <input type="range" id="sections" name="sections" min="2" max="8">
+                <span id="sections-value"></span>
+            </div>
+          
+            <div>
+                <label for="deviation">Roughness Size</label>
+                <input type="range" id="deviation" name="deviation" min="0" max="15">
+                <span id="deviation-value"></span>
+            </div>
+        
+        </div> 
+        <br>
+        <br>
+        <button id="clearButton">Clear All</button>
+        <br>
+        
+    </div>
+
+    <button id="downloadButton">Download Map</button>
+    <pre id="mapDisplay"></pre>
+
+    <script src="sidescroller.js"></script>
+</body>
+</html>
