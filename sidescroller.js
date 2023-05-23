@@ -13,37 +13,7 @@ let lastGemSpawn = Date.now();
 
 let backgroundImage = new Image();
 
-const imageFilenames = [
-    'backgrounds/00076-2055258051.png',
-    'backgrounds/00077-3004288226.png',
-    'backgrounds/00078-3004288227.png',
-    'backgrounds/00079-3004288228.png',
-    'backgrounds/00080-3774977934.png',
-    'backgrounds/00081-623439952.png',
-    'backgrounds/00082-623439953.png',
-    'backgrounds/00083-623439954.png',
-    'backgrounds/00084-6971595.png',
-    'backgrounds/00085-1398365039.png',
-    'backgrounds/00086-1398365040.png',
-    'backgrounds/00087-1398365041.png',
-    'backgrounds/00088-3756116480.png',
-    'backgrounds/00089-2699620337.png',
-    'backgrounds/00090-2699620338.png',
-    'backgrounds/00091-2699620339.png',
-    'backgrounds/00092-119057376.png',
-    'backgrounds/00093-2837173540.png',
-    'backgrounds/00094-2837173541.png',
-    'backgrounds/00095-2837173542.png',
-    'backgrounds/00096-2756970770.png',
-    'backgrounds/00097-31832491.png',
-    'backgrounds/00098-31832492.png',
-    'backgrounds/00099-31832493.png',
-];
-
-backgroundImage.src = "charlie2_background.png";  // Assuming the image is in the same directory as your HTML file.
-
-//let randomIndex = Math.floor(Math.random() * imageFilenames.length);
-//backgroundImage.src = imageFilenames[randomIndex];
+backgroundImage.src = "example_background.png";
 
 // 0 = open space, 1 = wall/floor
 
