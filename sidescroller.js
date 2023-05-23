@@ -627,7 +627,15 @@ function saveMapImage() {
     const link = document.createElement('a');
     link.href = dataURL;
     link.download = 'map.png';
-    link.click();
+    //link.click();
+
+    fetch('/save', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({image: dataURL}),
+});
 }
 
 function gameLoop() {
