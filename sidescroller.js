@@ -15,9 +15,10 @@ let backgroundImage = new Image();
 
 backgroundImage.src = "example_background.png";
 
+
 // 0 = open space, 1 = wall/floor
 
-const gameMap = [  [1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+let gameMap = [  [1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
 [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0],
 [1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0],
 [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0],
@@ -32,12 +33,25 @@ const gameMap = [  [1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
 [0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1],
 [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1],
 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1],
-[0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1],
-[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]]
+[0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1],
+[1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]]
 const mapHeight = gameMap.length;
 const mapWidth = gameMap[0].length;
 canvas.width = mapWidth * tileSize;
 canvas.height = mapHeight * tileSize;
+
+window.onload = function() {
+    fetch('/random_map')
+    .then(response => response.json())
+    .then(data => {
+        gameMap = data.map;
+        backgroundImage.src = data.image;
+    })
+    .catch((error) => {
+      console.error('Error:', error);
+    });
+}
+
 
 /********************************/
 /*      DRAW MAP                */
@@ -548,6 +562,16 @@ document.getElementById('clearButton').addEventListener('click', function() {
     drawMap(ctx);
 });
 
+let levelDescription = "jungle temple ruins overgrown with vines and ferns, shafts of light";
+
+// Get a reference to the text box
+const levelDescriptionTextBox = document.getElementById('levelDescription');
+
+// Add an event listener for the input event
+levelDescriptionTextBox.addEventListener('input', function(event) {
+    // Update the variable with the text box's current value
+    levelDescription = event.target.value;
+});
 
 document.getElementById("downloadButton").addEventListener("click", function() {
     saveMapImage();
@@ -608,16 +632,26 @@ canvas.addEventListener("click", function(event) {
     drawMap(ctx);
 }, false);
 
+function cleanMap(gameMap) {
+    // Create a deep copy of gameMap
+    let copiedMap = JSON.parse(JSON.stringify(gameMap));
+    
+    for (let i = 0; i < copiedMap.length; i++) {
+        for (let j = 0; j < copiedMap[i].length; j++) {
+            if (copiedMap[i][j] === 2) {
+                copiedMap[i][j] = 0;
+            }
+        }
+    }
+    return copiedMap;
+}
+
 function saveMapImage() {
     // Create a temporary canvas and context
     const tempCanvas = document.createElement('canvas');
     tempCanvas.width = mapWidth * tileSize;
     tempCanvas.height = mapHeight * tileSize;
     const tempCtx = tempCanvas.getContext('2d');
-
-
-    //tempCtx.clearRect(0, 0, canvas.width, canvas.height);
-
 
     // Draw the map on the temporary canvas
     drawMap(tempCtx);
@@ -627,15 +661,32 @@ function saveMapImage() {
     const link = document.createElement('a');
     link.href = dataURL;
     link.download = 'map.png';
-    //link.click();
+    link.click();
 
     fetch('/save', {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({image: dataURL}),
-});
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            image: dataURL,
+            prompt: levelDescription,
+            backgroundBrightness: backgroundBrightness,
+            architecture: architecture,
+            useGradient: useGradient,
+            jaggy: jaggy,
+            numSections: numSections,
+            maxDeviation: maxDeviation,
+            mapData: cleanMap(gameMap),
+        }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        backgroundImage.src = data.image;
+    })
+    .catch((error) => {
+    console.error('Error:', error);
+    });
 }
 
 function gameLoop() {
