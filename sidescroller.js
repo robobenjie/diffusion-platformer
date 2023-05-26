@@ -290,9 +290,9 @@ player2.leftSprite.src = "characters/druid_left.png";
 function drawPlayer(player) {
     // Define the width and height of each frame
     
-    if (player.vx > 0.1) {
+    if (player.moveRight) {
         player.direction = 'right';
-    } else if (player.vx < -0.1) {
+    } else if (player.moveLeft) {
         player.direction = 'left';
     }
     
@@ -312,7 +312,7 @@ function drawPlayer(player) {
         // If the player is jumping or standing, set the frame index directly
         if (player.isJumping) {
             player.frameIndex = player.direction == 'right' ? 1 : 0;
-        } else if (Math.abs(player.vx) < 0.1) {
+        } else if (Math.abs(player.vx) < 0.01 || !(player.moveRight || player.moveLeft)) {
             player.frameIndex = player.direction == 'right' ? 0 : 1;
         } else {
             // If the player is walking, advance the animation frame
@@ -406,12 +406,22 @@ function updatePlayer(currentPlayer, otherPlayers) {
     getCollidingPlayers(currentPlayer, otherPlayers, currentPlayer.x, currentPlayer.y, 5).forEach((collidingPlayer) => {
         const AbsDeltaX = Math.abs(currentPlayer.x - collidingPlayer.x);
         const AbsDeltaY = Math.abs(currentPlayer.y - collidingPlayer.y);
-        if (collidingPlayer.y > currentPlayer.y && AbsDeltaX < currentPlayer.size) {
+        if (collidingPlayer.y > currentPlayer.y && AbsDeltaX < currentPlayer.size && currentPlayer.vy > 0) {
             playerKilled(collidingPlayer);
             respawnPlayer(collidingPlayer);
             currentPlayer.score += 3;
             collidingPlayer.score -= 3;
             collidingPlayer.score = Math.max(collidingPlayer.score, 0);
+        } else {
+            let delta = currentPlayer.x - collidingPlayer.x;
+
+            // Only collide if they are pretty close together
+            const coefficientOfRestitution = 0.65
+            if (Math.abs(delta) < currentPlayer.size * collisionBoxWidthFraction) {
+                let tmp = currentPlayer.vx;
+                currentPlayer.vx = collidingPlayer.vx * coefficientOfRestitution + .01 * delta;
+                collidingPlayer.vx = tmp * coefficientOfRestitution - .01 * delta;
+            }
         }
     });
 
@@ -421,39 +431,7 @@ function updatePlayer(currentPlayer, otherPlayers) {
     if (isColliding(newX, currentPlayer.y, currentPlayer.size * collisionBoxWidthFraction)) {
         currentPlayer.vx = 0;
     } else {
-        // If already colliding:
-        const delta = 0.1;
-
-        let collidingPlayers = getCollidingPlayers(currentPlayer, otherPlayers, currentPlayer.x, currentPlayer.y);
-
-        collidingPlayers.forEach(collidingPlayer => {
-            const overlap = currentPlayer.size + collidingPlayer.size - Math.abs(currentPlayer.x - collidingPlayer.x);
-            const halfOverlap = overlap / 2;
-
-
-            if (currentPlayer.x < collidingPlayer.x) {
-                currentPlayer.x -= halfOverlap;
-                collidingPlayer.x += halfOverlap;
-            } else {
-                currentPlayer.x += halfOverlap;
-                collidingPlayer.x -= halfOverlap;
-            }
-        });
-        // If about to collide:
-        let nextTickCollidingPlayers = getCollidingPlayers(currentPlayer, otherPlayers, newX, currentPlayer.y);
-
-        nextTickCollidingPlayers.forEach(collidingPlayer => {
-            const other_is_left = collidingPlayer.x < currentPlayer.x;
-
-            if (!other_is_left) { // Moving right
-                currentPlayer.x = collidingPlayer.x - currentPlayer.size - player.size -0.5;
-            } else if (other_is_left) { // Moving left
-                currentPlayer.x = collidingPlayer.x + currentPlayer.size + player.size + 0.5;
-            }
-        });
-        if(collidingPlayers.length === 0 && nextTickCollidingPlayers.length === 0) {
-            currentPlayer.x = newX;
-        }
+        currentPlayer.x = newX;
     }
 
    // Vertical movement (gravity and jumping)
