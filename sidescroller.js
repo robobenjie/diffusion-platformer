@@ -7,7 +7,7 @@ const collisionBoxWidthFraction = 0.5;
 // Constants for gem spawning
 const minGemSpawn = 1; // Minimum seconds between gem spawns
 const maxGemSpawn = 5; // Maximum seconds between gem spawns
-const maxGemCount = 6; // Maximum number of gems on the screen at once
+const maxGemCount = 4; // Maximum number of gems on the screen at once
 // Initialize lastGemSpawn to the current time
 
 let socket = io();
@@ -17,7 +17,7 @@ let lastGemSpawn = Date.now();
 let backgroundImage = new Image();
 let collectibleImage = new Image();
 
-backgroundImage.src = "example_background.png";
+//backgroundImage.src = "example_background.png";
 
 
 // 0 = open space, 1 = wall/floor
@@ -50,6 +50,8 @@ window.onload = function() {
     .then(data => {
         gameMap = data.map;
         backgroundImage.src = data.image;
+        respawnPlayer(player);
+        respawnPlayer(player2);
     })
     .catch((error) => {
       console.error('Error:', error);
@@ -59,8 +61,7 @@ window.onload = function() {
     .then(data => {
         collectibleImage.src = data.image;
     })
-    respawnPlayer(player);
-    respawnPlayer(player2);
+
 }
 
 
@@ -262,9 +263,11 @@ const player = {
     frameIndex: 0,       // Current frame of the animation
     tickCount: 0,        // Counts the number of updates since the last frame change
     direction: 'right', 
-    sprite: new Image(),
+    rightSprite: new Image(),
+    leftSprite: new Image(),
 };
-player.sprite.src = "characters/druid.png";
+player.rightSprite.src = "characters/charlie.png";
+player.leftSprite.src = "characters/charlie_left.png";
 
 const player2 = {
     ...playerConfig,
@@ -278,13 +281,26 @@ const player2 = {
     frameIndex: 0,       // Current frame of the animation
     tickCount: 0,        // Counts the number of updates since the last frame change
     direction: 'right', 
-    sprite: new Image(),
+    rightSprite: new Image(),
+    leftSprite: new Image(),
 };
-player.sprite.src = "characters/elf.png";
+player2.rightSprite.src = "characters/druid.png";
+player2.leftSprite.src = "characters/druid_left.png";
 
 function drawPlayer(player) {
     // Define the width and height of each frame
-    playerSprite = player.sprite;
+    
+    if (player.vx > 0.1) {
+        player.direction = 'right';
+    } else if (player.vx < -0.1) {
+        player.direction = 'left';
+    }
+    
+    if (player.direction === 'right') {
+        playerSprite = player.rightSprite;
+    } else {
+        playerSprite = player.leftSprite;
+    }
     let frameWidth = playerSprite.width / player.numberOfFrames;
     let frameHeight = playerSprite.height;
 
@@ -294,31 +310,74 @@ function drawPlayer(player) {
         player.tickCount = 0;
         
         // If the player is jumping or standing, set the frame index directly
-        if (player.jumping) {
-            player.frameIndex = 1;
-        } else if (!player.moving) {
-            player.frameIndex = 0;
+        if (player.isJumping) {
+            player.frameIndex = player.direction == 'right' ? 1 : 0;
+        } else if (Math.abs(player.vx) < 0.1) {
+            player.frameIndex = player.direction == 'right' ? 0 : 1;
         } else {
             // If the player is walking, advance the animation frame
             player.frameIndex = (player.frameIndex + 1) % player.numberOfFrames;
         }
     }
-    
-    // Flip the context horizontally if the player is facing left
-    if (player.direction === 'left') {
-        ctx.scale(-1, 1);
-    }
-    
+
     // Determine the current frame to draw
     let frameX = player.frameIndex * frameWidth;
-    
-    // Draw the current frame
-    ctx.drawImage(playerSprite, frameX, 0, frameWidth, frameHeight, player.x, player.y, frameWidth, frameHeight);
-    
-    // Reset the context scale if it was flipped
-    if (player.direction === 'left') {
-        ctx.scale(-1, 1);
+
+    // adjust for sprite center
+    var playerX = player.x - frameWidth / 2;
+    var playerY = player.y - frameHeight / 2;
+
+    // Save the current context
+  
+    const heightOffset = 20;
+
+    ctx.drawImage(playerSprite, frameX, 0, frameWidth, frameHeight, player.x - frameWidth / 2, player.y - frameHeight / 2 - heightOffset, frameWidth, frameHeight);
+}
+
+// Create an array to hold the particles
+let particles = [];
+let particleSize = 5;
+const playerExplosionCount = 20;
+const particleGravity = 0.1;
+const particleExplotionSpeed = 2;
+
+// When the player is killed
+function playerKilled(player) {
+    // Break the player sprite into particles
+    for (let i = 0; i < playerExplosionCount; i += 1) {
+        particles.push({
+            x: player.x,
+            y: player.y,
+            vx: (Math.random() * 2 - 1) * particleExplotionSpeed,
+            vy: (Math.random() * 2 - 1) * particleExplotionSpeed,
+            size: particleSize,
+            lifespan: 100
+        });
     }
+}
+
+// Update the particles each frame
+function updateParticles() {
+    for (let i = particles.length - 1; i >= 0; i--) {
+        let p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += particleGravity;
+        p.size *= 0.99;
+        p.lifespan--;
+        if (p.lifespan <= 0) {
+            particles.splice(i, 1);
+        }
+    }
+}
+
+// Draw the particles each frame
+function drawParticles(ctx) {
+    ctx.fillStyle = "darkred";  // Set the color to dark red
+    for (let p of particles) {
+        ctx.fillRect(p.x, p.y, p.size, p.size);
+    }
+}
 
 function getCollidingPlayers(currentPlayer, otherPlayers, x, y, buffer = 0) {
     return otherPlayers.filter(player => {
@@ -348,6 +407,7 @@ function updatePlayer(currentPlayer, otherPlayers) {
         const AbsDeltaX = Math.abs(currentPlayer.x - collidingPlayer.x);
         const AbsDeltaY = Math.abs(currentPlayer.y - collidingPlayer.y);
         if (collidingPlayer.y > currentPlayer.y && AbsDeltaX < currentPlayer.size) {
+            playerKilled(collidingPlayer);
             respawnPlayer(collidingPlayer);
             currentPlayer.score += 3;
             collidingPlayer.score -= 3;
@@ -771,8 +831,10 @@ function gameLoop() {
         render_gems(ctx);
         updatePlayer(player, [player2]);
         updatePlayer(player2, [player]);
+        updateParticles();
         drawPlayer(player);
         drawPlayer(player2);
+        drawParticles(ctx);
         renderForegroundImageParts(ctx, backgroundImage);
         updateScoreDisplay();
         const now = Date.now();

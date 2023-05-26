@@ -80,7 +80,7 @@ def save_image():
     file_name = f'{folder}/background_image_{time.time()}.png'
     generated_background.save(file_name)
 
-    image.save(f'{folder}/prompt_image.png')
+    # image.save(f'{folder}/prompt_image.png')
     with open(f'{folder}/map.json', 'w') as f:
         f.write(json.dumps(map_object))
     return jsonify({
