@@ -9,6 +9,7 @@ from diffusers import DPMSolverMultistepScheduler
 import uuid
 
 NUM_STEPS = 30
+CHARACTER_NUM_STEPS = 20
 
 
 PROMPT_TEMPLATE = "Vector art, {user_prompt}, Overdetailed art, (masterpiece:1.2) (illustration:1.2) (best quality:1.2) (cinematic lighting) (sharp focus) (2D)"
@@ -25,6 +26,7 @@ model_id = "Onodofthenorth/SD_PixelArt_SpriteSheet_Generator"
 characterPipe = StableDiffusionPipeline.from_pretrained(model_id, torch_dtype=torch.float16)
 characterPipe.enable_model_cpu_offload()
 characterPipe.enable_xformers_memory_efficient_attention()
+characterPipe.safety_checker = lambda images, clip_input: (images, [False] * len(images))
 #characterPipe = characterPipe.to("cuda")
 
 pipe.enable_model_cpu_offload()
@@ -51,7 +53,7 @@ def getBackground(prompt, image, callback=None):
 def generateCharacter(prompt, callback=None):
     name= uuid.uuid4()
     prompt = prompt + " PixelartRSS"
-    image = characterPipe(prompt, num_inference_steps=20, callback=callback).images[0]
+    image = characterPipe(prompt, num_inference_steps=CHARACTER_NUM_STEPS, callback=callback).images[0]
     transparent_edges = make_transparent(image, 50)
     transparent_edges = transparent_edges.resize((100, 100), Image.LANCZOS)
     mirrored_image = ImageOps.mirror(transparent_edges)

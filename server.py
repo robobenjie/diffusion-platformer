@@ -70,7 +70,7 @@ def generate_character():
     prompt = data.get('prompt', 'videogame character')
     identifier = data.get('identifier', '')
     def callback(step, timestamp, latent):
-        progress = step / generate_images.NUM_STEPS
+        progress = step / generate_images.CHARACTER_NUM_STEPS
         socketio.emit('progress', {'progress': progress, 'identifier': identifier})
     name = generate_images.generateCharacter(prompt, callback=callback)
     return jsonify({
