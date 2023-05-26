@@ -808,7 +808,8 @@ socket.on('progress', function(data) {
         // Update your progress bar
         let progress = data.progress;
         // Assume your progress bar is a div with id "progressBar"
-        document.getElementById('progressBar').style.width = `${progress * 100}%`;
+        document.getElementById('progressBar').value = progress * 100;
+        
     }
 });
 
