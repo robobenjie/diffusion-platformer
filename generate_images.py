@@ -7,6 +7,8 @@ import torch
 from diffusers import DPMSolverMultistepScheduler
 from diffusers import UniPCMultistepScheduler
 
+NUM_STEPS = 30
+
 
 
 
@@ -22,7 +24,7 @@ pipe.enable_xformers_memory_efficient_attention()
 #pipe.scheduler = UniPCMultistepScheduler.from_config(pipe.scheduler.config)
 pipe.scheduler = DPMSolverMultistepScheduler.from_config(pipe.scheduler.config)
 
-def getBackground(prompt, image):
+def getBackground(prompt, image, callback=None):
     seed = np.random.randint(0, 2 ** 32 - 1)
     print("seed", seed)
     full_prompt = PROMPT_TEMPLATE.format(user_prompt=prompt)
@@ -31,8 +33,9 @@ def getBackground(prompt, image):
         full_prompt,
         image,
         negative_prompt="monochrome, lowres, bad anatomy, worst quality, low quality",
-        num_inference_steps=30,
+        num_inference_steps=NUM_STEPS,
         generator=generator,
+        callback=callback,
     )
     return output.images
     

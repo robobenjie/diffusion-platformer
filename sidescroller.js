@@ -9,6 +9,9 @@ const minGemSpawn = 1; // Minimum seconds between gem spawns
 const maxGemSpawn = 5; // Maximum seconds between gem spawns
 const maxGemCount = 6; // Maximum number of gems on the screen at once
 // Initialize lastGemSpawn to the current time
+
+let socket = io();
+
 let lastGemSpawn = Date.now();
 
 let backgroundImage = new Image();
@@ -50,6 +53,8 @@ window.onload = function() {
     .catch((error) => {
       console.error('Error:', error);
     });
+    respawnPlayer(player);
+    respawnPlayer(player2);
 }
 
 
@@ -646,8 +651,11 @@ function cleanMap(gameMap) {
     return copiedMap;
 }
 
+let identifier = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+
 function saveMapImage() {
     // Create a temporary canvas and context
+    document.getElementById('progressContainer').style.display = "block";
     const tempCanvas = document.createElement('canvas');
     tempCanvas.width = mapWidth * tileSize;
     tempCanvas.height = mapHeight * tileSize;
@@ -661,7 +669,7 @@ function saveMapImage() {
     const link = document.createElement('a');
     link.href = dataURL;
     link.download = 'map.png';
-    link.click();
+    //link.click();
 
     fetch('/save', {
         method: 'POST',
@@ -678,16 +686,31 @@ function saveMapImage() {
             numSections: numSections,
             maxDeviation: maxDeviation,
             mapData: cleanMap(gameMap),
+            identifier: identifier // Send the identifier
         }),
     })
     .then(response => response.json())
     .then(data => {
         backgroundImage.src = data.image;
+        document.getElementById('progressContainer').style.display = "none";
     })
     .catch((error) => {
     console.error('Error:', error);
     });
+
+    isEditMode = false;
 }
+
+// Listen for the 'progress' event
+socket.on('progress', function(data) {
+    if (data.identifier === identifier) {
+        // Update your progress bar
+        let progress = data.progress;
+        // Assume your progress bar is a div with id "progressBar"
+        document.getElementById('progressBar').style.width = `${progress * 100}%`;
+    }
+});
+
 
 function gameLoop() {
 

@@ -2,6 +2,7 @@ import os
 import time
 from flask import Flask, send_from_directory, request, jsonify
 from flask_cors import CORS
+from flask_socketio import SocketIO
 import random
 import base64
 from PIL import Image
@@ -9,9 +10,12 @@ from io import BytesIO
 import hashlib
 import json
 
+
 import generate_images
 
 app = Flask(__name__, static_folder='.', static_url_path='')
+app.config['SECRET_KEY'] = 'your secret key'
+socketio = SocketIO(app)
 
 @app.route('/')
 def index():
@@ -60,7 +64,12 @@ def save_image():
 
     image_bytes = base64.b64decode(image_data)
     image = Image.open(BytesIO(image_bytes))
-    generated_background = generate_images.getBackground(promt, image)[0]
+
+    identifier = data.get('identifier', '')
+    def callback(step, timestamp, latent):
+        progress = step / generate_images.NUM_STEPS
+        socketio.emit('progress', {'progress': progress, 'identifier': identifier})
+    generated_background = generate_images.getBackground(promt, image, callback=callback)[0]
     file_name = f'{folder}/background_image_{time.time()}.png'
     generated_background.save(file_name)
 
@@ -76,4 +85,4 @@ def serve_file(path):
     return send_from_directory(app.static_folder, path)
 
 if __name__ == "__main__":
-    app.run(port=8000)
+    socketio.run(app, port=8000)

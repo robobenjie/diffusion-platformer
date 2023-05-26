@@ -58,9 +58,16 @@
         
     </div>
 
-    <button id="downloadButton">Download Map</button>
+    <button id="downloadButton">Generate</button>
+    <div id="progressContainer" style="width: 100%; background-color: #f3f3f3; margin-top: 10px;">
+        <div id="progressBar" style="height: 20px; width: 0%; background-color: #4CAF50;"></div>
+    </div>
     <pre id="mapDisplay"></pre>
+    <script src="https://cdn.socket.io/4.3.2/socket.io.min.js" crossorigin="anonymous"></script>
+
+
 
     <script src="sidescroller.js"></script>
+
 </body>
 </html>
