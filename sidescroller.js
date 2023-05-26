@@ -646,7 +646,21 @@ document.getElementById('architectureToggle').addEventListener('change', (event)
 document.getElementById('clearButton').addEventListener('click', function() {
     for (let i = 0; i < mapHeight; i++) {
         for (let j = 0; j < mapWidth; j++) {
-            gameMap[i][j] = 0; // or whatever your default value is
+            if (i < mapHeight - 1) {
+                gameMap[i][j] = 0;
+            } else {
+                gameMap[i][j] = 1;
+            }
+        }
+    }
+    // Redraw the map
+    drawMap(ctx);
+});
+
+document.getElementById('fillButton').addEventListener('click', function() {
+    for (let i = 0; i < mapHeight; i++) {
+        for (let j = 0; j < mapWidth; j++) {
+            gameMap[i][j] = 1;
         }
     }
     // Redraw the map
@@ -779,12 +793,13 @@ function saveMapImage() {
     .then(data => {
         backgroundImage.src = data.image;
         document.getElementById('progressContainer').style.display = "none";
+        isEditMode = false;
     })
     .catch((error) => {
     console.error('Error:', error);
     });
 
-    isEditMode = false;
+
 }
 
 // Listen for the 'progress' event
