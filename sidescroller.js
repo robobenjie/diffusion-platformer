@@ -415,7 +415,7 @@ function updatePlayer(currentPlayer, otherPlayers) {
     getCollidingPlayers(currentPlayer, otherPlayers, currentPlayer.x, currentPlayer.y, 5).forEach((collidingPlayer) => {
         const AbsDeltaX = Math.abs(currentPlayer.x - collidingPlayer.x);
         const AbsDeltaY = Math.abs(currentPlayer.y - collidingPlayer.y);
-        if (collidingPlayer.y > currentPlayer.y && AbsDeltaX < currentPlayer.size && currentPlayer.vy > 0) {
+        if (collidingPlayer.y > currentPlayer.y + currentPlayer.size * 2 && AbsDeltaX < currentPlayer.size && currentPlayer.vy > 0) {
             playerKilled(collidingPlayer);
             respawnPlayer(collidingPlayer);
             currentPlayer.score += 3;
