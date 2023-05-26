@@ -246,8 +246,9 @@ const playerConfig = {
     friction: 0.9,
     gravity: 0.25,
     size: tileSize / 2,
+    ticksPerFrame: 15,   // Number of updates between each frame change
+    numberOfFrames: 4,   // Total number of frames in the animation
 };
-
 
 const player = {
     ...playerConfig,
@@ -258,7 +259,12 @@ const player = {
     vy: 0,
     isJumping: false,
     score: 0,
+    frameIndex: 0,       // Current frame of the animation
+    tickCount: 0,        // Counts the number of updates since the last frame change
+    direction: 'right', 
+    sprite: new Image(),
 };
+player.sprite.src = "characters/druid.png";
 
 const player2 = {
     ...playerConfig,
@@ -269,15 +275,50 @@ const player2 = {
     vy: 0,
     isJumping: false,
     score: 0,
+    frameIndex: 0,       // Current frame of the animation
+    tickCount: 0,        // Counts the number of updates since the last frame change
+    direction: 'right', 
+    sprite: new Image(),
 };
+player.sprite.src = "characters/elf.png";
 
 function drawPlayer(player) {
-    ctx.beginPath();
-    ctx.arc(player.x, player.y, player.size, 0, 2 * Math.PI);
-    ctx.fillStyle = player.color;
-    ctx.fill();
-    ctx.closePath();
-}
+    // Define the width and height of each frame
+    playerSprite = player.sprite;
+    let frameWidth = playerSprite.width / player.numberOfFrames;
+    let frameHeight = playerSprite.height;
+
+    player.tickCount += 1;
+    
+    if (player.tickCount > player.ticksPerFrame) {
+        player.tickCount = 0;
+        
+        // If the player is jumping or standing, set the frame index directly
+        if (player.jumping) {
+            player.frameIndex = 1;
+        } else if (!player.moving) {
+            player.frameIndex = 0;
+        } else {
+            // If the player is walking, advance the animation frame
+            player.frameIndex = (player.frameIndex + 1) % player.numberOfFrames;
+        }
+    }
+    
+    // Flip the context horizontally if the player is facing left
+    if (player.direction === 'left') {
+        ctx.scale(-1, 1);
+    }
+    
+    // Determine the current frame to draw
+    let frameX = player.frameIndex * frameWidth;
+    
+    // Draw the current frame
+    ctx.drawImage(playerSprite, frameX, 0, frameWidth, frameHeight, player.x, player.y, frameWidth, frameHeight);
+    
+    // Reset the context scale if it was flipped
+    if (player.direction === 'left') {
+        ctx.scale(-1, 1);
+    }
 
 function getCollidingPlayers(currentPlayer, otherPlayers, x, y, buffer = 0) {
     return otherPlayers.filter(player => {
