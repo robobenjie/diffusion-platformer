@@ -19,7 +19,12 @@
             <canvas id="gameCanvas" width="800" height="400"></canvas>
             <div id="scores" class="mt-4">
                 <p id="scorePlayer1">Player 1 Score: 0</p>
+                <a id="changeCharacter1" class="button is-primary">Change Character</a>
+                <button class="button is-primary generateCharacterButton" data-player="1">Generate Character</button>
                 <p id="scorePlayer2">Player 2 Score: 0</p>
+                <a id="changeCharacter2" class="button is-primary">Change Character</a>
+                <button class="button is-primary generateCharacterButton" data-player="2">Generate Character</button>
+
             </div>
             <br>
             <div class="field has-addons">
@@ -76,6 +81,31 @@
 
             <pre id="mapDisplay"></pre>
         </div>
+        <div class="modal" id="generateCharacterModal">
+            <div class="modal-background"></div>
+            <div class="modal-card">
+              <header class="modal-card-head">
+                <p class="modal-card-title">Generate New Character</p>
+                <button class="delete" aria-label="close" id="closeModal"></button>
+              </header>
+              <section class="modal-card-body">
+                <!-- Content -->
+                <form id="characterForm">
+                  <div class="field">
+                    <label class="label" for="characterDescription">Description</label>
+                    <div class="control">
+                      <input class="input" type="text" id="characterDescription" name="characterDescription" value="a person">
+                    </div>
+                    <p class="help">Note: this model takes prompts as very loose suggestions, and ignores things it doesn't understand</p>
+                  </div>
+                </form>
+              </section>
+              <footer class="modal-card-foot">
+                <button class="button is-success" id="submitCharacter">Submit</button>
+                <button class="button" id="cancelCharacter">Cancel</button>
+              </footer>
+            </div>
+          </div>
     </section>
     <script src="https://cdn.socket.io/4.3.2/socket.io.min.js" crossorigin="anonymous"></script>
     <script src="sidescroller.js"></script>

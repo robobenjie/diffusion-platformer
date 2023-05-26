@@ -29,16 +29,19 @@ def allowed_file(filename):
 def random_map():
     map_dirs = os.listdir('maps')
     random_dir = random.choice(map_dirs)
+    try:
+        with open(f'maps/{random_dir}/map.json') as f:
+            map_data = json.load(f)
 
-    with open(f'maps/{random_dir}/map.json') as f:
-        map_data = json.load(f)
+        image_file = random.choice([f for f in os.listdir(f'maps/{random_dir}') if f.endswith('.png')])
 
-    image_file = random.choice([f for f in os.listdir(f'maps/{random_dir}') if f.endswith('.png')])
-
-    return jsonify({
-        'map': map_data,
-        'image': f'maps/{random_dir}/{image_file}'
-    })
+        return jsonify({
+            'map': map_data,
+            'image': f'maps/{random_dir}/{image_file}'
+        })
+    except (FileNotFoundError, IndexError):
+        print(f'Error loading map {random_dir}')
+        return random_map()
 
 @app.route('/random_collectible', methods=['GET'])
 def random_collectible():
@@ -58,6 +61,22 @@ def random_character():
         'left': f"characters/{right.replace('.png', '_left.png')}"
     })
 
+
+
+# Generate new character
+@app.route('/generate_character', methods=['POST'])
+def generate_character():
+    data = request.get_json()
+    prompt = data.get('prompt', 'videogame character')
+    identifier = data.get('identifier', '')
+    def callback(step, timestamp, latent):
+        progress = step / generate_images.NUM_STEPS
+        socketio.emit('progress', {'progress': progress, 'identifier': identifier})
+    name = generate_images.generateCharacter(prompt, callback=callback)
+    return jsonify({
+        'right': f'characters/{name}.png',
+        'left': f"characters/{name}_left.png"
+    })
 
 
 @app.route('/save', methods=['POST'])

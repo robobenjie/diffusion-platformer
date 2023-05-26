@@ -1,10 +1,12 @@
 import diffusers
 import cv2
-from PIL import Image
+from PIL import Image, ImageOps
 import numpy as np
 from diffusers import StableDiffusionControlNetPipeline, ControlNetModel
+from diffusers import StableDiffusionPipeline
 import torch
 from diffusers import DPMSolverMultistepScheduler
+import uuid
 
 NUM_STEPS = 30
 
@@ -17,6 +19,13 @@ controlnet = ControlNetModel.from_pretrained("lllyasviel/sd-controlnet-depth", t
 pipe = StableDiffusionControlNetPipeline.from_pretrained(
     "./models/childrensIllustration/", controlnet=controlnet, torch_dtype=torch.float16, use_safetensors=True
 )#.to("cuda")
+
+
+model_id = "Onodofthenorth/SD_PixelArt_SpriteSheet_Generator"
+characterPipe = StableDiffusionPipeline.from_pretrained(model_id, torch_dtype=torch.float16)
+characterPipe.enable_model_cpu_offload()
+characterPipe.enable_xformers_memory_efficient_attention()
+#characterPipe = characterPipe.to("cuda")
 
 pipe.enable_model_cpu_offload()
 pipe.enable_xformers_memory_efficient_attention()
@@ -38,6 +47,17 @@ def getBackground(prompt, image, callback=None):
     )
     return output.images
 
+
+def generateCharacter(prompt, callback=None):
+    name= uuid.uuid4()
+    prompt = prompt + " PixelartRSS"
+    image = characterPipe(prompt, num_inference_steps=20, callback=callback).images[0]
+    transparent_edges = make_transparent(image, 50)
+    transparent_edges = transparent_edges.resize((100, 100), Image.LANCZOS)
+    mirrored_image = ImageOps.mirror(transparent_edges)
+    mirrored_image.save(f'./characters/{name}_left.png')
+    transparent_edges.save(f"./characters/{name}.png")
+    return name
 
 
 def getCollectable(callback=None):
