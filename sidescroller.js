@@ -335,7 +335,7 @@ function drawPlayer(player) {
     // Save the current context
   
     playerscale = 0.8;
-    const heightOffset = -(frameHeight - frameHeight*playerscale) + 25;
+    const heightOffset = -(frameHeight - frameHeight*playerscale) + 27;
     ctx.drawImage(playerSprite, frameX, 0, frameWidth, frameHeight, player.x - frameWidth / 2, player.y - frameHeight / 2 - heightOffset, frameWidth * playerscale, frameHeight * playerscale);
 }
 
@@ -343,8 +343,8 @@ function drawPlayer(player) {
 let particles = [];
 let particleSize = 5;
 const playerExplosionCount = 20;
-const particleGravity = 0.1;
-const particleExplotionSpeed = 3;
+const particleGravity = 0.06;
+const particleExplotionSpeed = 2.5;
 
 // When the player is killed
 function playerKilled(player) {
