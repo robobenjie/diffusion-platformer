@@ -40,6 +40,13 @@ def random_map():
         'image': f'maps/{random_dir}/{image_file}'
     })
 
+@app.route('/random_collectible', methods=['GET'])
+def random_collectible():
+    files = os.listdir('collectibles')
+    return jsonify({
+        'image': f'collectibles/{random.choice(files)}'
+    })
+
 
 @app.route('/save', methods=['POST'])
 def save_image():

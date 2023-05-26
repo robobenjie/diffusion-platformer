@@ -15,6 +15,7 @@ let socket = io();
 let lastGemSpawn = Date.now();
 
 let backgroundImage = new Image();
+let collectibleImage = new Image();
 
 backgroundImage.src = "example_background.png";
 
@@ -53,6 +54,11 @@ window.onload = function() {
     .catch((error) => {
       console.error('Error:', error);
     });
+    fetch('/random_collectible')
+    .then(response => response.json())
+    .then(data => {
+        collectibleImage.src = data.image;
+    })
     respawnPlayer(player);
     respawnPlayer(player2);
 }
@@ -216,11 +222,12 @@ function render_gems(ctx) {
     for (let i = 0; i < mapHeight; i++) {
         for (let j = 0; j < mapWidth; j++) {
 
+            let currentTimeInSeconds = Date.now() / 1000;
+            let sinusoid = Math.sin(currentTimeInSeconds * 2.0 + i + j) * 4;
+
             if(gameMap[i][j] === 2) {
-                ctx.fillStyle = 'blue';
-                ctx.beginPath();
-                ctx.arc(j * tileSize + tileSize / 2, i * tileSize + tileSize / 2, tileSize / 4, 0, Math.PI * 2, false);
-                ctx.fill();
+                // render collectible_image
+                ctx.drawImage(collectibleImage, j * tileSize, i * tileSize + sinusoid, collectibleImage.height, collectibleImage.width);
             }
         }
     }
