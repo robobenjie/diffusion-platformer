@@ -48,6 +48,18 @@ def random_collectible():
     })
 
 
+@app.route('/random_character', methods=['GET'])
+def random_character():
+    files = os.listdir('characters')
+    rights = [f for f in files if not f.endswith('left.png')]
+    right = random.choice(rights)
+    return jsonify({
+        'right': f'characters/{right}',
+        'left': f"characters/{right.replace('.png', '_left.png')}"
+    })
+
+
+
 @app.route('/save', methods=['POST'])
 def save_image():
     data = request.get_json()

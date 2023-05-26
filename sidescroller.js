@@ -61,9 +61,18 @@ window.onload = function() {
     .then(data => {
         collectibleImage.src = data.image;
     })
-
+    randomizePlayerSprite(player);
+    randomizePlayerSprite(player2);
 }
 
+function randomizePlayerSprite(player) {
+    fetch('/random_character')
+    .then(response => response.json())
+    .then(data => {
+        player.rightSprite.src = data.right;
+        player.leftSprite.src = data.left;
+    });
+}
 
 /********************************/
 /*      DRAW MAP                */
@@ -568,17 +577,27 @@ function getGemCount() {
     return count;
 }
 
-// Function to spawn a gem
 function spawnGem() {
     if (getGemCount() >= maxGemCount) {
         return;
     }
-    let x, y;
-    do {
-        x = Math.floor(Math.random() * mapWidth);
-        y = Math.floor(Math.random() * mapHeight);
-    } while (gameMap[y][x] !== 0 || gameMap[y + 1][x] !== 1);
-    gameMap[y][x] = 2;
+    let validLocations = [];
+
+    // Loop through each tile in the game map
+    for (let x = 0; x < mapWidth; x++) {
+        for (let y = 0; y < mapHeight - 1; y++) {
+            // Check if the current tile and the tile below meet the criteria for a gem
+            if (gameMap[y][x] === 0 && gameMap[y + 1][x] === 1) {
+                // If they do, add the location to the array
+                validLocations.push({x: x, y: y});
+            }
+        }
+    }
+    // If there are any valid locations, choose one at random
+    if (validLocations.length > 0) {
+        let location = validLocations[Math.floor(Math.random() * validLocations.length)];
+        gameMap[location.y][location.x] = 2;
+    }
 }
 
 function updateScoreDisplay() {
