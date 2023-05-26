@@ -237,7 +237,7 @@ function render_gems(ctx) {
 
             if(gameMap[i][j] === 2) {
                 // render collectible_image
-                ctx.drawImage(collectibleImage, j * tileSize, i * tileSize + sinusoid, collectibleImage.height, collectibleImage.width);
+                ctx.drawImage(collectibleImage, j * tileSize, i * tileSize + sinusoid, collectibleImage.height *0.7, collectibleImage.width * 0.7);
             }
         }
     }
@@ -332,15 +332,11 @@ function drawPlayer(player) {
     // Determine the current frame to draw
     let frameX = player.frameIndex * frameWidth;
 
-    // adjust for sprite center
-    var playerX = player.x - frameWidth / 2;
-    var playerY = player.y - frameHeight / 2;
-
     // Save the current context
   
-    const heightOffset = 20;
-
-    ctx.drawImage(playerSprite, frameX, 0, frameWidth, frameHeight, player.x - frameWidth / 2, player.y - frameHeight / 2 - heightOffset, frameWidth, frameHeight);
+    playerscale = 0.8;
+    const heightOffset = -(frameHeight - frameHeight*playerscale) + 25;
+    ctx.drawImage(playerSprite, frameX, 0, frameWidth, frameHeight, player.x - frameWidth / 2, player.y - frameHeight / 2 - heightOffset, frameWidth * playerscale, frameHeight * playerscale);
 }
 
 // Create an array to hold the particles
@@ -348,7 +344,7 @@ let particles = [];
 let particleSize = 5;
 const playerExplosionCount = 20;
 const particleGravity = 0.1;
-const particleExplotionSpeed = 2;
+const particleExplotionSpeed = 3;
 
 // When the player is killed
 function playerKilled(player) {
@@ -357,7 +353,7 @@ function playerKilled(player) {
         particles.push({
             x: player.x,
             y: player.y,
-            vx: (Math.random() * 2 - 1) * particleExplotionSpeed,
+            vx: (Math.random() * 2 - 1) * particleExplotionSpeed / 2,
             vy: (Math.random() * 2 - 1) * particleExplotionSpeed,
             size: particleSize,
             lifespan: 100
@@ -369,6 +365,15 @@ function playerKilled(player) {
 function updateParticles() {
     for (let i = particles.length - 1; i >= 0; i--) {
         let p = particles[i];
+        let newx = p.x + p.vx;
+        let newy = p.y + p.vy;
+        if (isColliding(p.x, newy)) {
+            p.vy *= -0.5;
+            p.xy *= 0.2;
+        }
+        if (isColliding(newx, p.y)) {
+            p.vx *= -0.5;
+        }
         p.x += p.vx;
         p.y += p.vy;
         p.vy += particleGravity;
@@ -414,8 +419,7 @@ function updatePlayer(currentPlayer, otherPlayers) {
     // Check for kills
     getCollidingPlayers(currentPlayer, otherPlayers, currentPlayer.x, currentPlayer.y, 5).forEach((collidingPlayer) => {
         const AbsDeltaX = Math.abs(currentPlayer.x - collidingPlayer.x);
-        const AbsDeltaY = Math.abs(currentPlayer.y - collidingPlayer.y);
-        if (collidingPlayer.y > currentPlayer.y + currentPlayer.size * 2 && AbsDeltaX < currentPlayer.size && currentPlayer.vy > 0) {
+        if (collidingPlayer.y > currentPlayer.y - currentPlayer.vy + tileSize - 1 && AbsDeltaX < currentPlayer.size && currentPlayer.vy > 0) {
             playerKilled(collidingPlayer);
             respawnPlayer(collidingPlayer);
             currentPlayer.score += 3;
@@ -445,7 +449,7 @@ function updatePlayer(currentPlayer, otherPlayers) {
 
    // Vertical movement (gravity and jumping)
    if (currentPlayer.moveUp && !currentPlayer.isJumping && isOnGround(currentPlayer)) {
-        currentPlayer.vy = -5;
+        currentPlayer.vy = -4.5;
         currentPlayer.isJumping = true;
     }
     if (currentPlayer.moveUp) {
