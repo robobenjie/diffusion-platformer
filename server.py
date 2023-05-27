@@ -16,6 +16,7 @@ import generate_images
 app = Flask(__name__, static_folder='.', static_url_path='')
 app.config['SECRET_KEY'] = 'your secret key'
 socketio = SocketIO(app)
+styles = []
 
 @app.route('/')
 def index():
@@ -78,6 +79,26 @@ def generate_character():
         'left': f"characters/{name}_left.png"
     })
 
+def load_styles():
+    global styles
+    with open('styles.json') as f:
+        styles = json.load(f)
+
+# Endpoint for getting all styles
+@app.route('/styles', methods=['GET'])
+def get_styles():
+    load_styles()
+    return jsonify(styles)
+
+@app.route('/save-style', methods=['POST'])
+def save_style():
+    load_styles()
+    data = request.get_json()
+    print(data)
+    styles.append(data)
+    with open('styles.json', 'w') as f:
+        f.write(json.dumps(styles))
+    return jsonify(success=True), 200
 
 @app.route('/save', methods=['POST'])
 def save_image():

@@ -43,6 +43,7 @@ const mapHeight = gameMap.length;
 const mapWidth = gameMap[0].length;
 canvas.width = mapWidth * tileSize;
 canvas.height = mapHeight * tileSize;
+let styles = [];
 
 window.onload = function() {
     fetch('/random_map')
@@ -63,6 +64,25 @@ window.onload = function() {
     })
     randomizePlayerSprite(player);
     randomizePlayerSprite(player2);
+    fetch('/styles')
+    .then(response => response.json())
+    .then(data => {
+        styles = data;
+        // Populate the dropdown with the style names
+        let dropdown = document.getElementById('styleDropdown');
+        styles.forEach(style => {
+            let option = document.createElement('option');
+            option.text = style.style_name;
+            dropdown.add(option);
+        });
+        // Add an event listener to update the style when a dropdown option is selected
+        dropdown.addEventListener('change', function() {
+            setStyle(this.value);
+        });
+})
+    .catch((error) => {
+      console.error('Error:', error);
+    });
 }
 
 function randomizePlayerSprite(player) {
@@ -860,6 +880,60 @@ function cleanMap(gameMap) {
 }
 
 let identifier = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+
+document.getElementById("saveStyle").addEventListener("click", function() {
+    saveStyle();
+});
+function saveStyle() {
+    fetch('/save-style', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            style_name: document.getElementById('styleName').value,
+            prompt: levelDescription,
+            backgroundBrightness: backgroundBrightness,
+            architecture: architecture,
+            useGradient: useGradient,
+            jaggy: jaggy,
+            numSections: numSections,
+            maxDeviation: maxDeviation,
+        }),
+    })
+}
+
+function setStyle(style_name) {
+    // Find the style with the matching name
+    let style = styles.find(s => s.style_name === style_name);
+    if (!style) {
+        console.error('Style not found:', style_name);
+        return;
+    }
+    
+    // Set the form inputs to match the style
+    document.getElementById('architectureToggle').checked = style.architecture;
+    architecture = style.architecture;
+    document.getElementById('bgSlider').value = style.backgroundBrightness;
+    backgroundBrightness = style.backgroundBrightness;
+    document.getElementById('gradientCheckbox').checked = style.useGradient;
+    useGradient = style.useGradient;
+    document.getElementById('jaggyCheckbox').checked = style.jaggy;
+    jaggy = style.jaggy;
+    if (style.jaggy) {
+        document.getElementById('jaggyControls').style.display = 'block';
+    } else {
+        document.getElementById('jaggyControls').style.display = 'none';
+    }
+    document.getElementById('sections').value = style.numSections;
+    numSections = style.numSections;
+    document.getElementById('deviation').value = style.maxDeviation;
+    maxDeviation = style.maxDeviation;
+    document.getElementById('styleName').value = style.style_name;
+    document.getElementById('levelDescription').value = style.prompt;
+    levelDescription = style.prompt;
+    drawMap(ctx);
+}
 
 function saveMapImage() {
     // Create a temporary canvas and context

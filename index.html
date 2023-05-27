@@ -29,7 +29,7 @@
             <br>
             <div class="field has-addons">
                 <div class="control is-expanded">
-                    <input type="text"  id="levelDescription" value="jungle temple ruins overgrown with vines and ferns, shafts of light" class="input">
+                    <select id="styleDropdown" class="input"></select>
                 </div>
                 <div class="control">
                     <button id="downloadButton" class="button is-link">Generate</button>
@@ -74,6 +74,17 @@
                         <span id="deviation-value"></span>
                     </div>
                 </div> 
+                <div class="control is-expanded">
+                    <input type="text"  id="levelDescription" value="jungle temple ruins overgrown with vines and ferns, shafts of light" class="input">
+                </div>
+                <div class="field has-addons">
+                    <div class="control is-expanded">
+                        <input type="text"  id="styleName" placeholder="Name of the style" class="input">
+                    </div>
+                    <div class="control">
+                        <button id="saveStyle" class="button is-link">Save Style</button>
+                    </div>
+                </div>
                 <br>
                 <button id="clearButton" class="button is-warning">Clear All</button>
                 <button id="fillButton" class="button is-primary">Fill All</button>
