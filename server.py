@@ -56,13 +56,14 @@ def random_map(logo=False):
     else:
         base_dir = 'maps'
     map_dirs = os.listdir(base_dir)
-    random_dir = random.choice(map_dirs)
+    choices = []
+    for map_dir in map_dirs:
+        for f in [f for f in os.listdir(f'{base_dir}/{map_dir}') if f.endswith('.png')]:
+            choices.append((map_dir, f))
+    random_dir, image_file = random.choice(choices)
     try:
         with open(f'{base_dir}/{random_dir}/map.json') as f:
             map_data = json.load(f)
-
-        image_file = random.choice([f for f in os.listdir(f'{base_dir}/{random_dir}') if f.endswith('.png')])
-
         return jsonify({
             'map': map_data,
             'image': f'{base_dir}/{random_dir}/{image_file}'
