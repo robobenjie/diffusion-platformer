@@ -48,7 +48,17 @@ canvas.height = mapHeight * tileSize;
 let styles = [];
 
 window.onload = function() {
-    fetch('/random_map')
+    const urlParams = new URLSearchParams(window.location.search);
+    console.log("Map name", urlParams.get('map_name'));
+    fetch('/get_map', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            map_path: urlParams.get('map_name')
+        }),
+    })
     .then(response => response.json())
     .then(data => {
         gameMap = data.map;
@@ -911,6 +921,7 @@ let action = null;
 let shiftDown = false;
 
 canvas.addEventListener("mousedown", function(event) {
+    if (!isEditMode) return;
     isMouseDown = true;
     const rect = canvas.getBoundingClientRect();
     const x = Math.floor((event.clientX - rect.left) / tileSize);

@@ -11,6 +11,7 @@ import hashlib
 import json
 from collections import defaultdict
 import random
+import uuid
 
 
 import generate_images
@@ -28,7 +29,25 @@ def allowed_file(filename):
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-@app.route('/random_map', methods=['GET'])
+@app.route('/get_map', methods=['POST'])
+def get_map():
+    data = request.get_json()
+    map_path = data.get('map_path', '')
+    if not map_path:
+        return random_map()
+    folder, filename = os.path.split(map_path)
+    try:
+        with open(f'maps/{folder}/map.json') as f:
+            map_data = json.load(f)
+
+        return jsonify({
+            'map': map_data,
+            'image': f'maps/{folder}/{filename}'
+        })
+    except (FileNotFoundError, IndexError):
+        print(f'Error loading map {folder}')
+        return random_map()
+
 def random_map():
     map_dirs = os.listdir('maps')
     random_dir = random.choice(map_dirs)
@@ -63,8 +82,6 @@ def random_character():
         'right': f'characters/{right}',
         'left': f"characters/{right.replace('.png', '_left.png')}"
     })
-
-
 
 # Generate new character
 @app.route('/generate_character', methods=['POST'])
@@ -131,7 +148,7 @@ def save_image():
         progress = step / generate_images.NUM_STEPS
         socketio.emit('progress', {'progress': progress, 'identifier': identifier, 'place_in_line': place_in_line})
     generated_background = generate_images.getBackground(promt, image, callback=callback)[0]
-    file_name = f'{folder}/background_image_{time.time()}.png'
+    file_name = f'{folder}/background_image_{uuid.uuid1()}.png'
     generated_background.save(file_name)
 
     # image.save(f'{folder}/prompt_image.png')
