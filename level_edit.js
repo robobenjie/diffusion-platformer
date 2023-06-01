@@ -252,6 +252,10 @@ export function loadStyles() {
             option.text = style.style_name;
             dropdown.add(option);
         });
+        let option = document.createElement('option');
+        option.text = "Custom";
+        dropdown.add(option);
+
         // Randomly select a style on load
         let randomIndex = Math.floor(Math.random() * styles.length);
         dropdown.selectedIndex = randomIndex;
@@ -291,6 +295,14 @@ function saveStyle() {
 
 export function setStyle(style_name) {
     // Find the style with the matching name
+    if (style_name === 'Custom') {
+        document.getElementById('style-edit-tools').style.display = 'block';
+        isEditMode = true;
+        drawMap(ctx);
+        return;
+    } else {
+        document.getElementById('style-edit-tools').style.display = 'none';
+    }
     let style = styles.find(s => s.style_name === style_name);
     if (!style) {
         console.error('Style not found:', style_name);

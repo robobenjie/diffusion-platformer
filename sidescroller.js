@@ -529,7 +529,7 @@ document.getElementById('changeCharacter2').addEventListener('click', function()
 
 let currentGeneratingPlayer;
 
-let types = ["boy", "girl", "robot", "woman", "knight", "ninja", "wizard", "pirate", "man", "monster"];
+let types = ["boy", "girl", "woman", "knight", "elf", "wizard", "pirate", "man", "monster"];
 let colors = ["red", "blue", "green", "yellow", "black", "white", "purple", "pink", "orange", "silver"];
 let things = ["hair", "shirt", "hat", "shoes", "backpack", "bandana", "pointy hat", "jacket", "pants", "scarf"];
 document.querySelectorAll('.generateCharacterButton').forEach(button => {
