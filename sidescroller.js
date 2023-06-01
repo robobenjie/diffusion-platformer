@@ -10,6 +10,8 @@ const maxGemSpawn = 5; // Maximum seconds between gem spawns
 const maxGemCount = 4; // Maximum number of gems on the screen at once
 // Initialize lastGemSpawn to the current time
 
+const targetFPS = 165;
+
 let socket = io();
 
 let lastGemSpawn = Date.now();
@@ -273,12 +275,11 @@ function render_gems(ctx) {
  ******************************************************/
 
 const playerConfig = {
-    speed: 4,
     size: tileSize / 2 - 2,
-    ax: 0.2,
+    ax: 0.2 * targetFPS,
     maxVx: 2,
     friction: 0.9,
-    gravity: 0.25,
+    gravity: 0.25 * targetFPS * targetFPS,
     size: tileSize / 2,
     ticksPerFrame: 15,   // Number of updates between each frame change
     numberOfFrames: 4,   // Total number of frames in the animation
@@ -363,8 +364,8 @@ function drawPlayer(player) {
 let particles = [];
 let particleSize = 5;
 const playerExplosionCount = 20;
-const particleGravity = 0.06;
-const particleExplotionSpeed = 2.5;
+const particleGravity = 0.06 * targetFPS * targetFPS;
+const particleExplotionSpeed = 2.5 * targetFPS;
 
 // When the player is killed
 function playerKilled(player) {
@@ -382,11 +383,11 @@ function playerKilled(player) {
 }
 
 // Update the particles each frame
-function updateParticles() {
+function updateParticles(dt) {
     for (let i = particles.length - 1; i >= 0; i--) {
         let p = particles[i];
-        let newx = p.x + p.vx;
-        let newy = p.y + p.vy;
+        let newx = p.x + p.vx * dt;
+        let newy = p.y + p.vy * dt;
         if (isColliding(p.x, newy)) {
             p.vy *= -0.5;
             p.xy *= 0.2;
@@ -394,9 +395,9 @@ function updateParticles() {
         if (isColliding(newx, p.y)) {
             p.vx *= -0.5;
         }
-        p.x += p.vx;
-        p.y += p.vy;
-        p.vy += particleGravity;
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.vy += particleGravity * dt;
         p.size *= 0.99;
         p.lifespan--;
         if (p.lifespan <= 0) {
@@ -422,18 +423,18 @@ function getCollidingPlayers(currentPlayer, otherPlayers, x, y, buffer = 0) {
     });
 }
 
-function updatePlayer(currentPlayer, otherPlayers) {
+function updatePlayer(currentPlayer, otherPlayers, dt) {
     if (!isInGameArea(currentPlayer.x, currentPlayer.y)) {
         respawnPlayer(currentPlayer);
         return
     }
     // Horizontal movement
     if (currentPlayer.moveLeft && currentPlayer.vx > -currentPlayer.maxVx) {
-        currentPlayer.vx -= currentPlayer.ax;
+        currentPlayer.vx -= currentPlayer.ax * dt;
     } else if (currentPlayer.moveRight && currentPlayer.vx < currentPlayer.maxVx) {
-        currentPlayer.vx += currentPlayer.ax;
+        currentPlayer.vx += currentPlayer.ax * dt;
     } else {
-        currentPlayer.vx *= currentPlayer.friction;
+        currentPlayer.vx *= Math.pow(currentPlayer.friction, dt * targetFPS);
     }
 
     // Check for kills
@@ -469,15 +470,15 @@ function updatePlayer(currentPlayer, otherPlayers) {
 
    // Vertical movement (gravity and jumping)
    if (currentPlayer.moveUp && !currentPlayer.isJumping && isOnGround(currentPlayer)) {
-        currentPlayer.vy = -4.5;
+        currentPlayer.vy = -4.5 * targetFPS;
         currentPlayer.isJumping = true;
     }
     if (currentPlayer.moveUp) {
-        currentPlayer.vy += currentPlayer.gravity * 0.3;
+        currentPlayer.vy += (currentPlayer.gravity * 0.3) * dt;
     } else {
-        currentPlayer.vy += currentPlayer.gravity;
+        currentPlayer.vy += currentPlayer.gravity * dt;
     }
-    currentPlayer.y += currentPlayer.vy;
+    currentPlayer.y += currentPlayer.vy * dt;
 
     // Vertical collision
     if (isColliding(currentPlayer.x, currentPlayer.y + currentPlayer.size / 2, collisionBoxWidthFraction * currentPlayer.size) && currentPlayer.vy >= 0) { // Ground collision
@@ -486,8 +487,9 @@ function updatePlayer(currentPlayer, otherPlayers) {
         currentPlayer.vy = 0;
     } else if (isColliding(currentPlayer.x, currentPlayer.y - currentPlayer.size / 2, collisionBoxWidthFraction * currentPlayer.size)) { // Ceiling collision
         currentPlayer.y = Math.ceil((currentPlayer.y - currentPlayer.size / 2) / tileSize) * tileSize + currentPlayer.size / 2;
-        currentPlayer.vy = 0.01; // Math.Min(0, currentPlayer.vy);
+        currentPlayer.vy = 0.01 * targetFPS; // Math.Min(0, currentPlayer.vy);
     }
+
     const gemX = Math.floor(currentPlayer.x / tileSize);
     const gemY = Math.floor(currentPlayer.y / tileSize);
     if (gameMap[gemY][gemX] === 2) {
@@ -1059,9 +1061,20 @@ socket.on('progress', function(data) {
     }
 });
 
-
+let i = 0;
+let last_measure = Date.now();
+let lastLoopTime = Date.now();
 function gameLoop() {
-
+    let loopStart = Date.now();
+    let dt = (loopStart - lastLoopTime) / 1000;
+    i += 1;
+    if (i === 100) {
+        let now = Date.now();
+        let fps = 100 / ((now - last_measure) / 1000);
+        last_measure = now;
+        i = 0;
+        document.getElementById("fps").textContent = `${parseInt(fps)} fps, ${dt * targetFPS}`;
+    }
     if (isEditMode) {
         document.getElementById("edit-tools").style.display = "block";
     } else {
@@ -1069,9 +1082,9 @@ function gameLoop() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         renderBackgroundImage(ctx, backgroundImage);
         render_gems(ctx);
-        updatePlayer(player, [player2]);
-        updatePlayer(player2, [player]);
-        updateParticles();
+        updatePlayer(player, [player2], dt);
+        updatePlayer(player2, [player], dt);
+        updateParticles(dt);
         drawPlayer(player);
         drawPlayer(player2);
         drawParticles(ctx);
@@ -1083,6 +1096,7 @@ function gameLoop() {
             lastGemSpawn = now;
         }
     }
+    lastLoopTime = loopStart;
 
     requestAnimationFrame(gameLoop);
 }
