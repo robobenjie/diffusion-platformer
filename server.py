@@ -9,6 +9,8 @@ from PIL import Image
 from io import BytesIO
 import hashlib
 import json
+from collections import defaultdict
+import random
 
 
 import generate_images
@@ -138,6 +140,62 @@ def save_image():
     return jsonify({
         'image': file_name
     })
+
+@app.route('/create_random_map', methods=['GET'])
+def get_random_map():
+    width = 25
+    jump_prob = 0.5
+    maps = []
+    folder = 'maps/'
+
+    # Traverse directory with all files
+    for root, dirs, files in os.walk(folder):
+        for file in files:
+            # Check for .json extension
+            if file.endswith('.json'):
+                with open(os.path.join(root, file), 'r') as json_file:
+                    map_data = json.load(json_file)
+                    maps.append(map_data)
+    # The starting map
+    # Dictionary to hold columns and the maps that contain them
+    column_maps = defaultdict(list)
+
+    # Iterate over all maps and all columns in each map
+    for map_index, currMap in enumerate(maps):
+        map_t = list(zip(*currMap))  # Transpose the map to work with columns
+        for col_index, column in enumerate(map_t):
+            # Convert column to tuple to use it as a dictionary key
+            column_tuple = tuple(column)
+            # Add the map index and column index to the list for this column
+            column_maps[column_tuple].append((map_index, col_index))
+
+    random_start_index = random.randint(0, len(maps) - 1)
+    map_t = list(zip(*maps[random_start_index]))
+
+    # The new map starts with the first column of the starting map
+    new_map_t = [map_t[0]]
+
+    while len(new_map_t) < width:
+        last_column = new_map_t[-1]
+        if last_column in column_maps and random.random() < jump_prob:
+            # There is a chance to jump to another map
+            new_map_index, new_col_index = random.choice(column_maps[last_column])
+            # Make sure the column is not further than current column
+            if new_col_index < len(new_map_t):
+                map_t = list(zip(*maps[new_map_index]))  # Switch to the new map
+                # Continue from the new column index
+                new_map_t.append(map_t[new_col_index])
+        else:
+            # Continue with the next column in the current map, or a random column if at the end
+            if len(new_map_t) < len(map_t):
+                new_map_t.append(map_t[len(new_map_t)])
+            else:
+                new_map_t.append(random.choice(list(column_maps.keys())))
+    # Transpose the new map back to row-major order
+    new_map = list(zip(*new_map_t))
+    return jsonify({
+            'map': new_map,
+            })
    
 @app.route('/<path:path>')
 def serve_file(path):

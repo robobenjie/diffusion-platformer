@@ -75,6 +75,10 @@ window.onload = function() {
             option.text = style.style_name;
             dropdown.add(option);
         });
+        // Randomly select a style on load
+        let randomIndex = Math.floor(Math.random() * styles.length);
+        dropdown.selectedIndex = randomIndex;
+        setStyle(dropdown.options[randomIndex].text);
         // Add an event listener to update the style when a dropdown option is selected
         dropdown.addEventListener('change', function() {
             setStyle(this.value);
@@ -795,6 +799,24 @@ document.getElementById('fillButton').addEventListener('click', function() {
     drawMap(ctx);
 });
 
+function randomizeMap() {
+    fetch('/create_random_map')
+    .then(response => response.json())
+    .then(data => {
+        gameMap = data.map;
+        drawMap(ctx);
+        respawnPlayer(player);
+        respawnPlayer(player2);
+    })
+    .catch((error) => {
+      console.error('Error:', error);
+    });
+}
+
+document.getElementById('randomButton').addEventListener('click', function() {
+    randomizeMap();
+});
+
 let levelDescription = "jungle temple ruins overgrown with vines and ferns, shafts of light";
 
 // Get a reference to the text box
@@ -845,25 +867,59 @@ slider.addEventListener("input", function() {
 });
 
 
-canvas.addEventListener("click", function(event) {
-    if (!isEditMode) return;
+let isMouseDown = false;
+let action = null;
+let shiftDown = false;
 
+canvas.addEventListener("mousedown", function(event) {
+    isMouseDown = true;
     const rect = canvas.getBoundingClientRect();
     const x = Math.floor((event.clientX - rect.left) / tileSize);
     const y = Math.floor((event.clientY - rect.top) / tileSize);
 
-    // Toggle the tile at the clicked location
-    gameMap[y][x] = gameMap[y][x] === 0 ? 1 : 0;
-    // Display the map
-    const mapContainer = document.getElementById('mapDisplay');
-    let formattedMap = '[';
-    gameMap.forEach((row, i) => {
-        formattedMap += '  [' + row.join(', ') + ']';
-        formattedMap += i !== gameMap.length - 1 ? ',\n' : ']';
-    });
-    mapContainer.textContent = formattedMap;
+    action = gameMap[y][x] === 0 ? 1 : 0;
+    gameMap[y][x] = action;
+
+    if(shiftDown) applyToArea(x, y, action);
+    
     drawMap(ctx);
 }, false);
+
+canvas.addEventListener("mousemove", function(event) {
+    if (!isMouseDown || !isEditMode) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = Math.floor((event.clientX - rect.left) / tileSize);
+    const y = Math.floor((event.clientY - rect.top) / tileSize);
+    gameMap[y][x] = action;
+    
+    if(shiftDown) applyToArea(x, y, action);
+    
+    drawMap(ctx);
+}, false);
+
+canvas.addEventListener("mouseup", function(event) {
+    isMouseDown = false;
+}, false);
+
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Shift') {
+        shiftDown = true;
+    }
+}, false);
+
+document.addEventListener('keyup', function(event) {
+    if (event.key === 'Shift') {
+        shiftDown = false;
+    }
+}, false);
+
+function applyToArea(x, y, action) {
+    for(let i = Math.max(0, y - 1); i <= Math.min(gameMap.length - 1, y + 1); i++) {
+        for(let j = Math.max(0, x - 1); j <= Math.min(gameMap[0].length - 1, x + 1); j++) {
+            gameMap[i][j] = action;
+        }
+    }
+}
 
 function cleanMap(gameMap) {
     // Create a deep copy of gameMap

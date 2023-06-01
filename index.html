@@ -16,7 +16,6 @@
 <body>
     <section class="section">
         <div class="container">
-            <canvas id="gameCanvas" width="800" height="400"></canvas>
             <div id="scores" class="mt-4">
                 <p id="scorePlayer1">Player 1 Score: 0</p>
                 <a id="changeCharacter1" class="button is-primary">Change Character</a>
@@ -26,6 +25,9 @@
                 <button class="button is-primary generateCharacterButton" data-player="2">Generate Character</button>
 
             </div>
+            <br>
+            <canvas id="gameCanvas" width="800" height="400"></canvas>
+
             <br>
             <div class="field has-addons">
                 <div class="control is-expanded">
@@ -41,6 +43,12 @@
             <button id="editButton" class="button is-info mt-4">Edit Map</button>
     
             <div id="edit-tools" style="display: none;">
+                <p>Click to edit map. Hold shift for larger areas.</p>
+                <div>
+                    <button id="clearButton" class="button is-warning">Clear All</button>
+                    <button id="fillButton" class="button is-primary">Fill All</button>
+                    <button id="randomButton" class="button is-primary">Randomize</button>
+                </div>
                 <label class="checkbox">
                     <input type="checkbox" id="architectureToggle" name="architectureToggle" checked>
                     Toggle Architecture
@@ -86,8 +94,6 @@
                     </div>
                 </div>
                 <br>
-                <button id="clearButton" class="button is-warning">Clear All</button>
-                <button id="fillButton" class="button is-primary">Fill All</button>
             </div>
 
             <pre id="mapDisplay"></pre>
