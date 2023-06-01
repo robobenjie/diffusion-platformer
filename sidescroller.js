@@ -61,12 +61,17 @@ window.onload = function() {
     loadStyles();
 }
 
-function randomizePlayerSprite(player) {
+function randomizePlayerSprite(target_player) {
     fetch('/random_character')
     .then(response => response.json())
     .then(data => {
-        player.rightSprite.src = data.right;
-        player.leftSprite.src = data.left;
+        target_player.rightSprite.src = data.right;
+        target_player.leftSprite.src = data.left;
+        if (target_player === player) {
+            document.getElementById('player-sprite-1').src = data.right;
+        } else {
+            document.getElementById('player-sprite-2').src = data.right;
+        }
     });
 }
 
@@ -289,7 +294,7 @@ function updatePlayer(currentPlayer, otherPlayers, dt) {
     // Check for kills
     getCollidingPlayers(currentPlayer, otherPlayers, currentPlayer.x, currentPlayer.y, 5).forEach((collidingPlayer) => {
         const AbsDeltaX = Math.abs(currentPlayer.x - collidingPlayer.x);
-        if (collidingPlayer.y > currentPlayer.y - currentPlayer.vy + tileSize - 1 && AbsDeltaX < currentPlayer.size && currentPlayer.vy > 0) {
+        if (collidingPlayer.y > currentPlayer.y - currentPlayer.vy * dt + tileSize - 1 && AbsDeltaX < currentPlayer.size && currentPlayer.vy > 0) {
             playerKilled(collidingPlayer);
             respawnPlayer(collidingPlayer);
             currentPlayer.score += 3;
@@ -518,8 +523,8 @@ function spawnGem() {
 }
 
 function updateScoreDisplay() {
-    document.getElementById('scorePlayer1').textContent = `Player 1 Score: ${player.score}`;
-    document.getElementById('scorePlayer2').textContent = `Player 2 Score: ${player2.score}`;
+    document.getElementById('scorePlayer1').textContent = `Score: ${player.score}`;
+    document.getElementById('scorePlayer2').textContent = `Score: ${player2.score}`;
 }
 
 
