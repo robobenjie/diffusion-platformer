@@ -1,5 +1,5 @@
 import os
-import time
+import numpy as np
 from flask import Flask, send_from_directory, request, jsonify
 from flask_cors import CORS
 from flask_socketio import SocketIO
@@ -29,6 +29,14 @@ def allowed_file(filename):
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+def get_style(folder, filename):
+    try:
+        style_file = '_'.join(filename.split('_')[2:]).replace('.png', '_style.json')
+        with open(f'{folder}/{style_file}') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return {}
+
 @app.route('/get_map', methods=['POST'])
 def get_map():
     data = request.get_json()
@@ -41,10 +49,12 @@ def get_map():
     try:
         with open(f'{folder}/map.json') as f:
             map_data = json.load(f)
+        style = get_style(folder, filename)
 
         return jsonify({
             'map': map_data,
-            'image': f'{folder}/{filename}'
+            'image': f'{folder}/{filename}',
+            'style': style,
         })
     except (FileNotFoundError, IndexError):
         print(f'Error loading map {folder}')
@@ -61,12 +71,14 @@ def random_map(logo=False):
         for f in [f for f in os.listdir(f'{base_dir}/{map_dir}') if f.endswith('.png')]:
             choices.append((map_dir, f))
     random_dir, image_file = random.choice(choices)
+    style = get_style(random_dir, image_file)
     try:
         with open(f'{base_dir}/{random_dir}/map.json') as f:
             map_data = json.load(f)
         return jsonify({
             'map': map_data,
-            'image': f'{base_dir}/{random_dir}/{image_file}'
+            'image': f'{base_dir}/{random_dir}/{image_file}',
+            'style': style,
         })
     except (FileNotFoundError, IndexError):
         print(f'Error loading map {random_dir}')
@@ -128,14 +140,24 @@ def save_style():
         f.write(json.dumps(styles))
     return jsonify(success=True), 200
 
+def get_map_for_style(folder, style):
+    json_files = [f for f in os.listdir(folder) if f.endswith('style.json')]
+    np.random.shuffle(json_files)
+    for json_file in json_files:
+        with open(f'{folder}/{json_file}') as f:
+            map_data = json.load(f)
+        if map_data.get('style_name', 'source_name') == style.get('style_name', 'different_name'):
+            return f'{folder}/background_image_{json_file.replace("_style.json", ".png")}'
+
 @app.route('/save', methods=['POST'])
 def save_image():
     data = request.get_json()
     image_data = data.get('image', '')
     promt = data.get('prompt', 'videogame level')
     map_object = data.get('mapData', 'NO MAP')
+    style = data.get('style', {})
+    
     map_bytes = json.dumps(map_object, sort_keys=True).encode()
-    print(map_object)
     # Create a SHA-256 hash of the map data
     hash_object = hashlib.sha256(map_bytes)
 
@@ -145,6 +167,13 @@ def save_image():
     folder = os.path.join("maps", map_hash)
     os.makedirs(folder, exist_ok=True)
 
+    if not data.get('regenerate', False):
+        image = get_map_for_style(folder, style)
+        if image:
+            return jsonify({
+                'image': image,
+                'style': style,
+            })
     # remove 'data:image/png;base64,' from the start of the data URL
     image_data = image_data.replace('data:image/png;base64,', '')
     # decode the base64 data to bytes
@@ -157,14 +186,18 @@ def save_image():
         progress = step / generate_images.NUM_STEPS
         socketio.emit('progress', {'progress': progress, 'identifier': identifier, 'place_in_line': place_in_line})
     generated_background = generate_images.getBackground(promt, image, callback=callback)[0]
-    file_name = f'{folder}/background_image_{uuid.uuid1()}.png'
+    uid = uuid.uuid1()
+    file_name = f'{folder}/background_image_{uid}.png'
     generated_background.save(file_name)
+    with open (f'{folder}/{uid}_style.json', 'w') as f:
+        f.write(json.dumps(style))
 
     # image.save(f'{folder}/prompt_image.png')
     with open(f'{folder}/map.json', 'w') as f:
         f.write(json.dumps(map_object))
     return jsonify({
-        'image': file_name
+        'image': file_name,
+        'style': style,
     })
 
 @app.route('/create_random_map', methods=['GET'])

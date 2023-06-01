@@ -1,4 +1,5 @@
-import { isEditMode, tileSize, gameMap, mapHeight, mapWidth, setMap, loadStyles, drawMap, setMapChangeCallback, setIsEditMode} from './level_edit.js';
+import { isEditMode, tileSize, gameMap, mapHeight, mapWidth, setMap, loadStyles,
+     drawMap, setMapChangeCallback, setIsEditMode, getCurrentStyle} from './level_edit.js';
 import { setChangeSpriteCallback, randomizePlayerSprite } from './character_select.js';
 
 const canvas = document.getElementById('gameCanvas');
@@ -6,6 +7,7 @@ const ctx = canvas.getContext('2d');
 
 let dieSound = new Audio('/sounds/pop.wav');
 let gemSound = new Audio('/sounds/coin.mp3');
+let currentImageStyle = null;
 const collisionBoxWidthFraction = 0.5;
 
 // Constants for gem spawning
@@ -47,6 +49,7 @@ window.onload = function() {
         respawnPlayer(player);
         respawnPlayer(player2);
         gameCanvas.focus();
+        currentImageStyle = data.style;
     })
     .catch((error) => {
       console.error('Error:', error);
@@ -628,7 +631,6 @@ function saveMapImage() {
     link.href = dataURL;
     link.download = 'map.png';
     //link.click();
-
     fetch('/save', {
         method: 'POST',
         headers: {
@@ -638,12 +640,19 @@ function saveMapImage() {
             image: dataURL,
             prompt: document.getElementById('levelDescription').value,
             mapData: cleanMap(gameMap),
+            style: getCurrentStyle(),
+            regenerate: currentImageStyle.style_name === getCurrentStyle().style_name,
             identifier: identifier // Send the identifier
         }),
     })
     .then(response => response.json())
     .then(data => {
-        backgroundImage.src = data.image;
+        let img = new Image();
+        img.onload = function() {
+            backgroundImage.src = this.src;
+        }
+        img.src = data.image;
+        currentImageStyle = data.style;
         document.getElementById('progressContainer').style.display = "none";
         setIsEditMode(false);
         gameCanvas.focus();

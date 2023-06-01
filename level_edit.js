@@ -274,22 +274,26 @@ document.getElementById("saveStyle").addEventListener("click", function() {
     saveStyle();
 });
 
+export function getCurrentStyle() {
+    return {
+        style_name: document.getElementById('styleName').value,
+        prompt: levelDescription,
+        backgroundBrightness: backgroundBrightness,
+        architecture: architecture,
+        useGradient: useGradient,
+        jaggy: jaggy,
+        numSections: numSections,
+        maxDeviation: maxDeviation
+    }
+}
+
 function saveStyle() {
     fetch('/save-style', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-            style_name: document.getElementById('styleName').value,
-            prompt: levelDescription,
-            backgroundBrightness: backgroundBrightness,
-            architecture: architecture,
-            useGradient: useGradient,
-            jaggy: jaggy,
-            numSections: numSections,
-            maxDeviation: maxDeviation,
-        }),
+        body: JSON.stringify(getCurrentStyle()),
     })
 }
 
