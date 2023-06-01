@@ -37,12 +37,12 @@ def get_map():
         return random_map()
     folder, filename = os.path.split(map_path)
     try:
-        with open(f'maps/{folder}/map.json') as f:
+        with open(f'{folder}/map.json') as f:
             map_data = json.load(f)
 
         return jsonify({
             'map': map_data,
-            'image': f'maps/{folder}/{filename}'
+            'image': f'{folder}/{filename}'
         })
     except (FileNotFoundError, IndexError):
         print(f'Error loading map {folder}')
