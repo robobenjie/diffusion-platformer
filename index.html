@@ -32,8 +32,7 @@
                                 </div>
                                 <div class="column">
                                     <p id="scorePlayer1">Score: 0</p>
-                                    <a id="changeCharacter1" class="button is-small">Change Character</a>
-                                    <button class="button is-small generateCharacterButton" data-player="1">Generate Character</button>
+                                    <button class="button is-small generateCharacterButton" data-player="1">Change Character</button>
                                 </div>
                             </div>
                         </div>
@@ -48,8 +47,7 @@
                                 </div>
                                 <div class="column">
                                     <p id="scorePlayer2">Score: 0</p>
-                                    <a id="changeCharacter2" class="button is-small">Change Character</a>
-                                    <button class="button is-small generateCharacterButton" data-player="2">Generate Character</button>
+                                    <button class="button is-small generateCharacterButton" data-player="2">Change Character</button>
                                 </div>
                             </div>
                         </div>
@@ -156,33 +154,74 @@
             </footer>
             </div>
         </div>
+
+        <!-- Change Character Modal -->
         <div class="modal" id="generateCharacterModal">
             <div class="modal-background"></div>
             <div class="modal-card">
               <header class="modal-card-head">
-                <p class="modal-card-title">Generate New Character</p>
+                <p class="modal-card-title">Change Character</p>
                 <button class="delete" aria-label="close" id="closeModal"></button>
               </header>
               <section class="modal-card-body">
                 <!-- Content -->
+                <section class="section">
+                    <div class="container">
+                        <div class="columns is-multiline is-mobile">
+                            <div class="column has-text-centered" style="padding: 0.0rem; display: flex; justify-content: center; align-items: center;">
+                                <div style="width: 25px; height: 58px; overflow: hidden; position: relative;">
+                                    <img id="character1" class="character-image" src="characters/druid.png" alt="Character 1" style="object-fit: none; object-position: 0% 50%; height: 100px; position: relative; top: -21px;">
+                                </div>
+                            </div>
+                            <div class="column has-text-centered" style="padding: 0.0rem; display: flex; justify-content: center; align-items: center;">
+                                <div style="width: 25px; height: 58px; overflow: hidden; position: relative;">
+                                    <img id="character2" class="character-image" src="characters/druid.png" alt="Character 2" style="object-fit: none; object-position: 0% 50%; height: 100px; position: relative; top: -21px;">
+                                </div>
+                            </div>
+                            <div class="column has-text-centered" style="padding: 0.0rem; display: flex; justify-content: center; align-items: center;">
+                                <div style="width: 25px; height: 58px; overflow: hidden; position: relative;">
+                                    <img id="character3" class="character-image" src="characters/druid.png" alt="Character 33" style="object-fit: none; object-position: 0% 50%; height: 100px; position: relative; top: -21px;">
+                                </div>
+                            </div>
+                            <div class="column has-text-centered" style="padding: 0.0rem; display: flex; justify-content: center; align-items: center;">
+                                <div style="width: 25px; height: 58px; overflow: hidden; position: relative;">
+                                    <img id="character4" class="character-image" src="characters/druid.png" alt="Character 4" style="object-fit: none; object-position: 0% 50%; height: 100px; position: relative; top: -21px;">
+                                </div>
+                            </div>
+                            <div class="column has-text-centered" style="padding: 0.0rem; display: flex; justify-content: center; align-items: center;">
+                                <button class="button" id="refreshCharacters">Refresh</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
                 <form id="characterForm">
                   <div class="field">
                     <label class="label" for="characterDescription">Description</label>
+                    <div class="field has-addons">
+                        <div class="control is-expanded">
+                            <input class="input" type="text" id="characterDescription" name="characterDescription" value="a person">
+                        </div>
                     <div class="control">
-                      <input class="input" type="text" id="characterDescription" name="characterDescription" value="a person">
+                        <button class="button is-success" id="submitCharacter">Generate New</button>
                     </div>
+                </div>
+                <div>
                     <p class="help">Note: this model takes prompts as very loose suggestions, and ignores things it doesn't understand</p>
-                  </div>
-                </form>
-              </section>
-              <footer class="modal-card-foot">
-                <button class="button is-success" id="submitCharacter">Submit</button>
-                <button class="button" id="cancelCharacter">Cancel</button>
-              </footer>
-            </div>
-          </div>
+                    <span id="CharacterProgressStatus" style="display: block;"> .</span>
+                    <div class="progress is-small" id="CharacterProgressContainer" display="None">
+                        <progress class="progress is-primary" value="0" id="CharacterProgressBar" max="100">0%</progress>
+                    </div>
+                </div>
+            </form>
+            </section>
+            <footer class="modal-card-foot">
+            <button class="button" id="cancelCharacter">Cancel</button>
+            </footer>
+        </div>
+    </div>
     </section>
     <script src="level_edit.js" type="module"></script>
+    <script src="player_select.js" type="module"></script>
     <script src="https://cdn.socket.io/4.3.2/socket.io.min.js" crossorigin="anonymous"></script>
     <script src="sidescroller.js" type="module"></script>
 </body>

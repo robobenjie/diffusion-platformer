@@ -80,15 +80,17 @@ def random_collectible():
     })
 
 
-@app.route('/random_character', methods=['GET'])
+@app.route('/random_character', methods=['POST'])
 def random_character():
     files = os.listdir('characters')
-    rights = [f for f in files if not f.endswith('left.png')]
-    right = random.choice(rights)
-    return jsonify({
-        'right': f'characters/{right}',
-        'left': f"characters/{right.replace('.png', '_left.png')}"
-    })
+    data = request.get_json()
+    num = data.get('num_requested', 1)
+    ret = []
+    for _ in range(num):
+        rights = [f for f in files if not f.endswith('left.png')]
+        right = random.choice(rights)
+        ret.append({"right": f'characters/{right}', "left": f"characters/{right.replace('.png', '_left.png')}"})
+    return jsonify(ret)
 
 # Generate new character
 @app.route('/generate_character', methods=['POST'])
@@ -99,11 +101,11 @@ def generate_character():
     def callback(step=1, timestamp=0, latent=None, place_in_line=0):
         progress = step / generate_images.CHARACTER_NUM_STEPS
         socketio.emit('progress', {'progress': progress, 'identifier': identifier, 'place_in_line': place_in_line})
-    name = generate_images.generateCharacter(prompt, callback=callback)
-    return jsonify({
-        'right': f'characters/{name}.png',
+    names = generate_images.generateCharacters(prompt, num=4, callback=callback)
+    return jsonify([{
+        'right': f'characters/{name}.png',  
         'left': f"characters/{name}_left.png"
-    })
+    } for name in names])
 
 def load_styles():
     global styles

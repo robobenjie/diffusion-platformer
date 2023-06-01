@@ -80,23 +80,27 @@ def getBackground(prompt, image, callback=None):
     return output.images
 
 
-def generateCharacter(prompt, callback=None):
+def generateCharacters(prompt, num=1, callback=None):
     if characterPipe is None:
         createCharacterPipe()
-    name= uuid.uuid4()
+    
     prompt = prompt + " PixelartRSS"
     waiting_on_character_callbacks.insert(0, callback)
     notifyCharacterCreationQueue()
     with characterCreationLock:
-      image = characterPipe(prompt, num_inference_steps=CHARACTER_NUM_STEPS, callback=callback).images[0]
+      images = [characterPipe(prompt, num_inference_steps=CHARACTER_NUM_STEPS, callback=callback).images[0] for _ in range(num)]
     waiting_on_character_callbacks.pop()
     notifyBackgroundCreationQueue()
-    transparent_edges = make_transparent(image, 50)
-    transparent_edges = transparent_edges.resize((100, 100), Image.LANCZOS)
-    mirrored_image = ImageOps.mirror(transparent_edges)
-    mirrored_image.save(f'./characters/{name}_left.png')
-    transparent_edges.save(f"./characters/{name}.png")
-    return name
+    names = []
+    for image in images:
+        name= uuid.uuid4()
+        names.append(name)
+        transparent_edges = make_transparent(image, 50)
+        transparent_edges = transparent_edges.resize((100, 100), Image.LANCZOS)
+        mirrored_image = ImageOps.mirror(transparent_edges)
+        mirrored_image.save(f'./characters/{name}_left.png')
+        transparent_edges.save(f"./characters/{name}.png")
+    return names
 
 
 def getCollectable(callback=None):

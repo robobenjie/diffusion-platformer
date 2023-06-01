@@ -1,5 +1,5 @@
 import { isEditMode, tileSize, gameMap, mapHeight, mapWidth, setMap, loadStyles, drawMap, setMapChangeCallback, setIsEditMode} from './level_edit.js';
-
+import { setChangeSpriteCallback, randomizePlayerSprite } from './character_select.js';
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -56,23 +56,9 @@ window.onload = function() {
     .then(data => {
         collectibleImage.src = data.image;
     })
-    randomizePlayerSprite(player);
-    randomizePlayerSprite(player2);
+    randomizePlayerSprite(1);
+    randomizePlayerSprite(2);
     loadStyles();
-}
-
-function randomizePlayerSprite(target_player) {
-    fetch('/random_character')
-    .then(response => response.json())
-    .then(data => {
-        target_player.rightSprite.src = data.right;
-        target_player.leftSprite.src = data.left;
-        if (target_player === player) {
-            document.getElementById('player-sprite-1').src = data.right;
-        } else {
-            document.getElementById('player-sprite-2').src = data.right;
-        }
-    });
 }
 
 
@@ -528,90 +514,20 @@ function updateScoreDisplay() {
 }
 
 
-document.getElementById('changeCharacter1').addEventListener('click', function() {
-    randomizePlayerSprite(player);
-});
-document.getElementById('changeCharacter2').addEventListener('click', function() {
-    randomizePlayerSprite(player2);
-});
-
-
-
-/******************************
- * Generate Character Code    *
- * ****************************/
-
-let currentGeneratingPlayer;
-
-let types = ["boy", "girl", "woman", "knight", "elf", "wizard", "pirate", "man", "monster"];
-let colors = ["red", "blue", "green", "yellow", "black", "white", "purple", "pink", "orange", "silver"];
-let things = ["hair", "shirt", "hat", "shoes", "backpack", "bandana", "pointy hat", "jacket", "pants", "scarf"];
-document.querySelectorAll('.generateCharacterButton').forEach(button => {
-    button.addEventListener('click', function() {
-      currentGeneratingPlayer = this.dataset.player;
-      document.getElementById('characterDescription').value = getRandomPhrase(); // set the initial value
-      document.getElementById('generateCharacterModal').classList.add('is-active');
-    });
-  });
-  
-
-function getRandomPhrase() {
-    let randomType = types[Math.floor(Math.random() * types.length)];
-    let randomColor = colors[Math.floor(Math.random() * colors.length)];
-    let randomThing = things[Math.floor(Math.random() * things.length)];
-    return "a " + randomType + " with " + randomColor + " " + randomThing;
+function setPlayerSprite(currentGeneratingPlayer, left, right) {
+    if(parseInt(currentGeneratingPlayer) === 1) {
+        player.rightSprite.src = right;
+        player.leftSprite.src = left;
+        document.getElementById('player-sprite-1').src = right;
+    } else {
+        player2.rightSprite.src = right;
+        player2.leftSprite.src = left;
+        document.getElementById('player-sprite-2').src = right;
+    }
 }
 
+setChangeSpriteCallback(setPlayerSprite);
 
-document.querySelectorAll('.generateCharacterButton').forEach(button => {
-  button.addEventListener('click', function() {
-    currentGeneratingPlayer = this.dataset.player; // Save which player's button was clicked
-    document.getElementById('generateCharacterModal').classList.add('is-active');
-  });
-});
-
-document.getElementById('closeModal').addEventListener('click', function() {
-  document.getElementById('generateCharacterModal').classList.remove('is-active');
-});
-
-document.getElementById('cancelCharacter').addEventListener('click', function() {
-  document.getElementById('generateCharacterModal').classList.remove('is-active');
-});
-
-document.getElementById('submitCharacter').addEventListener('click', function() {
-    // Handle form submission here
-    // Get the value with: document.getElementById('characterDescription').value
-    document.getElementById('progressStatus').textContent = 'Submitted.';
-    document.getElementById('generateCharacterModal').classList.remove('is-active');
-    document.getElementById('progressContainer').style.display = "block";
-    document.getElementById('progressBar').value = 3;
-    fetch('/generate_character', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            prompt: document.getElementById('characterDescription').value,
-            identifier: identifier // Send the identifier
-        }),
-    })
-    .then(response => response.json())
-    .then(data => {
-        document.getElementById('progressBar').value = 100;
-        if(currentGeneratingPlayer === '1') {
-            player.rightSprite.src = data.right;
-            player.leftSprite.src = data.left;
-        } else {
-            player2.rightSprite.src = data.right;
-            player2.leftSprite.src = data.left;
-        }
-        document.getElementById('progressContainer').style.display = "none";
-        document.getElementById('progressStatus').textContent = '';
-    })
-    .catch((error) => {
-    console.error('Error:', error);
-    });
-});
 
 document.getElementById("downloadButton").addEventListener("click", function() {
     saveMapImage();
