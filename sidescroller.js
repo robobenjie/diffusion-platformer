@@ -55,6 +55,7 @@ window.onload = function() {
         backgroundImage.src = data.image;
         respawnPlayer(player);
         respawnPlayer(player2);
+        gameArea.focus();
     })
     .catch((error) => {
       console.error('Error:', error);
@@ -565,7 +566,35 @@ function isOnGround(player) {
     return isColliding(player.x, player.y + player.size / 2 + 1, player.size * collisionBoxWidthFraction);
 }
 
-document.addEventListener('keydown', (event) => {
+let gameArea = document.getElementById('gameCanvas');
+
+gameArea.addEventListener('click', function() {
+    gameCanvas.focus();
+});
+
+gameArea.addEventListener('focus', function() {
+    // Enable key event handlers when gameArea gets focus
+    window.addEventListener('keydown', keydownHandler, false);
+    window.addEventListener('keyup', keyupHandler, false);
+});
+
+gameArea.addEventListener('blur', function() {
+    // Disable key event handlers when gameArea loses focus
+    window.removeEventListener('keydown', keydownHandler, false);
+    window.removeEventListener('keyup', keyupHandler, false);
+});
+
+function keydownHandler(event) {
+    if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(event.key)) {
+        event.preventDefault();
+        // Your current keydown handler logic here...
+    }
+
+    // Letters
+    if(["a", "s", "d", "w"].includes(event.key.toLowerCase())) {
+        event.preventDefault();
+        
+    }
     if (event.key === 'ArrowUp') player.moveUp = true;
     if (event.key === 'ArrowDown') player.moveDown = true;
     if (event.key === 'ArrowLeft') player.moveLeft = true;
@@ -576,9 +605,19 @@ document.addEventListener('keydown', (event) => {
     if (event.key === 'a') player2.moveLeft = true;
     if (event.key === 's') player2.moveDown = true;
     if (event.key === 'd') player2.moveRight = true;
-});
+};
 
-document.addEventListener('keyup', (event) => {
+function keyupHandler (event) {
+    if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(event.key)) {
+        event.preventDefault();
+        // Your current keydown handler logic here...
+    }
+
+    // Letters
+    if(["a", "s", "d", "w"].includes(event.key.toLowerCase())) {
+        event.preventDefault();
+        
+    }
     if (event.key === 'ArrowUp') player.moveUp = false;
     if (event.key === 'ArrowDown') player.moveDown = false;
     if (event.key === 'ArrowLeft') player.moveLeft = false;
@@ -589,7 +628,7 @@ document.addEventListener('keyup', (event) => {
     if (event.key === 'a') player2.moveLeft = false;
     if (event.key === 's') player2.moveDown = false;
     if (event.key === 'd') player2.moveRight = false;
-});
+};
 
 function getGemCount() {
     let count = 0;
