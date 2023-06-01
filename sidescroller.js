@@ -299,8 +299,6 @@ const player = {
     rightSprite: new Image(),
     leftSprite: new Image(),
 };
-player.rightSprite.src = "characters/charlie.png";
-player.leftSprite.src = "characters/charlie_left.png";
 
 const player2 = {
     ...playerConfig,
@@ -317,8 +315,6 @@ const player2 = {
     rightSprite: new Image(),
     leftSprite: new Image(),
 };
-player2.rightSprite.src = "characters/druid.png";
-player2.leftSprite.src = "characters/druid_left.png";
 
 function drawPlayer(player) {
     // Define the width and height of each frame
@@ -743,7 +739,7 @@ document.getElementById('cancelCharacter').addEventListener('click', function() 
 document.getElementById('submitCharacter').addEventListener('click', function() {
     // Handle form submission here
     // Get the value with: document.getElementById('characterDescription').value
-    console.log('Generating character for player ' + currentGeneratingPlayer + document.getElementById('characterDescription').value);
+    document.getElementById('progressStatus').textContent = 'Submitted.';
     document.getElementById('generateCharacterModal').classList.remove('is-active');
     document.getElementById('progressContainer').style.display = "block";
     document.getElementById('progressBar').value = 3;
@@ -767,6 +763,8 @@ document.getElementById('submitCharacter').addEventListener('click', function() 
             player2.rightSprite.src = data.right;
             player2.leftSprite.src = data.left;
         }
+        document.getElementById('progressContainer').style.display = "none";
+        document.getElementById('progressStatus').textContent = '';
     })
     .catch((error) => {
     console.error('Error:', error);
@@ -993,6 +991,7 @@ function setStyle(style_name) {
 
 function saveMapImage() {
     // Create a temporary canvas and context
+    document.getElementById('progressStatus').textContent = 'Submitted.';
     document.getElementById('progressContainer').style.display = "block";
     document.getElementById('progressBar').value = 3;
     const tempCanvas = document.createElement('canvas');
@@ -1033,6 +1032,7 @@ function saveMapImage() {
         backgroundImage.src = data.image;
         document.getElementById('progressContainer').style.display = "none";
         isEditMode = false;
+        document.getElementById('editButton').textContent = isEditMode ? "Play Game" : "Edit Map";
         document.getElementById('progressBar').value = 100;
         document.getElementById('progressStatus').textContent = '';
     })

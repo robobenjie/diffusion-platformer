@@ -20,6 +20,9 @@ ITEM_PROMPT_TEMPLATE = "spritesheet, floating {user_prompt} on white background,
 backgroundCreationLock = threading.Lock()
 waiting_on_background_callbacks = []
 
+characterCreationLock = threading.Lock()
+waiting_on_character_callbacks = []
+
 pipe = None
 def createLevelPipe():
     global pipe
@@ -45,6 +48,11 @@ def createCharacterPipe():
 def notifyBackgroundCreationQueue():
     total = len(waiting_on_background_callbacks)
     for i, callback in enumerate(waiting_on_background_callbacks):
+        callback(place_in_line=total - i)
+
+def notifyCharacterCreationQueue():
+    total = len(waiting_on_character_callbacks)
+    for i, callback in enumerate(waiting_on_character_callbacks):
         callback(place_in_line=total - i)
 
 def getBackground(prompt, image, callback=None):
@@ -77,7 +85,12 @@ def generateCharacter(prompt, callback=None):
         createCharacterPipe()
     name= uuid.uuid4()
     prompt = prompt + " PixelartRSS"
-    image = characterPipe(prompt, num_inference_steps=CHARACTER_NUM_STEPS, callback=callback).images[0]
+    waiting_on_character_callbacks.insert(0, callback)
+    notifyCharacterCreationQueue()
+    with characterCreationLock:
+      image = characterPipe(prompt, num_inference_steps=CHARACTER_NUM_STEPS, callback=callback).images[0]
+    waiting_on_character_callbacks.pop()
+    notifyBackgroundCreationQueue()
     transparent_edges = make_transparent(image, 50)
     transparent_edges = transparent_edges.resize((100, 100), Image.LANCZOS)
     mirrored_image = ImageOps.mirror(transparent_edges)
