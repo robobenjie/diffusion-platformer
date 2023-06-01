@@ -1034,6 +1034,7 @@ function saveMapImage() {
         document.getElementById('progressContainer').style.display = "none";
         isEditMode = false;
         document.getElementById('progressBar').value = 100;
+        document.getElementById('progressStatus').textContent = '';
     })
     .catch((error) => {
     console.error('Error:', error);
@@ -1045,11 +1046,16 @@ function saveMapImage() {
 // Listen for the 'progress' event
 socket.on('progress', function(data) {
     if (data.identifier === identifier) {
-        // Update your progress bar
-        let progress = data.progress;
-        // Assume your progress bar is a div with id "progressBar"
-        document.getElementById('progressBar').value = progress * 100;
-        
+        let place_in_line = data.place_in_line;
+        let statusLabel = document.getElementById('progressStatus');
+        if (place_in_line > 0) {
+            statusLabel.textContent = `${place_in_line - 1} request(s) ahead of you.`;
+        } else {
+            // Update your progress bar
+            let progress = data.progress;
+            statusLabel.textContent = `Drawing. ${parseInt(progress * 100)}% complete.`;
+            document.getElementById('progressBar').value = progress * 100;
+        }
     }
 });
 

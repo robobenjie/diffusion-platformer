@@ -1,5 +1,6 @@
 import diffusers
 import cv2
+import threading
 from PIL import Image, ImageOps
 import numpy as np
 from diffusers import StableDiffusionControlNetPipeline, ControlNetModel
@@ -15,6 +16,9 @@ CHARACTER_NUM_STEPS = 20
 PROMPT_TEMPLATE = "Vector art, {user_prompt}, Overdetailed art, (masterpiece:1.2) (illustration:1.2) (best quality:1.2) (cinematic lighting) (sharp focus) (2D)"
 NEGATIVE_PROMPT = "lightnings, anime, topless, nsfw, naked, large breast, (dark) (lowpoly) (CG) (bokeh) (3d:1.5) (blurry) (duplicate) (watermark) (label) (signature) (frames) (text), (worst quality:1.2), (low quality:1.2), (normal quality:1.2), lowres, normal quality, ((monochrome)), ((grayscale)) (person)"
 ITEM_PROMPT_TEMPLATE = "spritesheet, floating {user_prompt} on white background, videogame item 2D, vector art,  Overdetailed art, (masterpiece:1.2) (illustration:1.2) (best quality:1.2) (cinematic lighting) (sharp focus) (2D)"
+
+backgroundCreationLock = threading.Lock()
+waiting_on_background_callbacks = []
 
 pipe = None
 def createLevelPipe():
@@ -38,6 +42,10 @@ def createCharacterPipe():
     characterPipe.safety_checker = lambda images, clip_input: (images, [False] * len(images))
     #characterPipe = characterPipe.to("cuda")
 
+def notifyBackgroundCreationQueue():
+    total = len(waiting_on_background_callbacks)
+    for i, callback in enumerate(waiting_on_background_callbacks):
+        callback(place_in_line=total - i)
 
 def getBackground(prompt, image, callback=None):
     if pipe is None:
@@ -46,14 +54,21 @@ def getBackground(prompt, image, callback=None):
     print("seed", seed)
     full_prompt = PROMPT_TEMPLATE.format(user_prompt=prompt)
     generator = [torch.Generator(device="cpu").manual_seed(seed)]
-    output = pipe(
-        full_prompt,
-        image,
-        negative_prompt="monochrome, lowres, bad anatomy, worst quality, low quality",
-        num_inference_steps=NUM_STEPS,
-        generator=generator,
-        callback=callback,
-    )
+    waiting_on_background_callbacks.insert(0, callback)
+    notifyBackgroundCreationQueue()
+    with backgroundCreationLock:
+        try:
+            output = pipe(
+                full_prompt,
+                image,
+                negative_prompt="monochrome, lowres, bad anatomy, worst quality, low quality",
+                num_inference_steps=NUM_STEPS,
+                generator=generator,
+                callback=callback,
+            )
+        finally:
+            waiting_on_background_callbacks.pop()
+            notifyBackgroundCreationQueue()
     return output.images
 
 

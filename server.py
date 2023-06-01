@@ -127,9 +127,9 @@ def save_image():
     image = Image.open(BytesIO(image_bytes))
 
     identifier = data.get('identifier', '')
-    def callback(step, timestamp, latent):
+    def callback(step=1, timestamp=0, latent=None, place_in_line=0):
         progress = step / generate_images.NUM_STEPS
-        socketio.emit('progress', {'progress': progress, 'identifier': identifier})
+        socketio.emit('progress', {'progress': progress, 'identifier': identifier, 'place_in_line': place_in_line})
     generated_background = generate_images.getBackground(promt, image, callback=callback)[0]
     file_name = f'{folder}/background_image_{time.time()}.png'
     generated_background.save(file_name)
