@@ -394,6 +394,68 @@ function drawBlock(tmpCtx, i, j, color) {
     tmpCtx.fillRect(j * tileSize, i * tileSize, tileSize, tileSize);
 }
 
+
+function interpolateColors(startColor, endColor, steps) {
+    let start = {
+        'r': parseInt(startColor.slice(1, 3), 16),
+        'g': parseInt(startColor.slice(3, 5), 16),
+        'b': parseInt(startColor.slice(5, 7), 16)
+    }
+    let end = {
+        'r': parseInt(endColor.slice(1, 3), 16),
+        'g': parseInt(endColor.slice(3, 5), 16),
+        'b': parseInt(endColor.slice(5, 7), 16)
+    }
+    let diff = {
+        'r': end['r'] - start['r'],
+        'g': end['g'] - start['g'],
+        'b': end['b'] - start['b']
+    }
+    let stepsRGB = {
+        'r': diff['r'] / (steps - 1),
+        'g': diff['g'] / (steps - 1),
+        'b': diff['b'] / (steps - 1)
+    }
+    let colorArr = [];
+    for(let i = 0; i < steps; i++) {
+        let r = Math.round(start['r'] + stepsRGB['r'] * i).toString(16).padStart(2, '0');
+        let g = Math.round(start['g'] + stepsRGB['g'] * i).toString(16).padStart(2, '0');
+        let b = Math.round(start['b'] + stepsRGB['b'] * i).toString(16).padStart(2, '0');
+        colorArr.push('#' + r + g + b);
+    }
+    return colorArr;
+}
+
+
+function text(ctx, words, y_offset) {
+    // Set font properties
+ctx.font = '150px Impact'; // Change the size and font to what you want
+ctx.fillStyle = '#dfdfdf'; // Change to the color you want
+
+let text = words
+let textWidth = ctx.measureText(text).width;
+
+// Calculate the starting coordinates
+let x = (canvas.width - textWidth) / 2;
+let y = canvas.height / 2;
+ctx.strokeStyle = "white"; 
+ctx.lineWidth = 15; 
+
+// Write the text
+//ctx.fillText(text, x, y + y_offset);
+//ctx.strokeText(text, x, y + y_offset);
+ctx.fillStyle = "#757575"
+ctx.fillText(text, x, y + y_offset);
+ctx.fillStyle = '#dfdfdf'; // Change to the color you want
+// let colors = interpolateColors("#757575","#000000",  10);
+let colors = interpolateColors("#757575", '#dfdfdf',  10);
+for (let i = 0; i < colors.length; i++) {
+    ctx.fillStyle = colors[i];
+    ctx.fillText(text, x + (colors.length - i), y + y_offset - (colors.length - i));
+}
+ctx.fillText(text, x, y + y_offset);
+}
+
 export function drawMap(tmpCtx, wallColor = '#989898', topColor = '#dfdfdf') {
     // Overhang factor
     let overhangFactor = 0.15;
@@ -472,4 +534,8 @@ export function drawMap(tmpCtx, wallColor = '#989898', topColor = '#dfdfdf') {
             }
         } 
     }
+    /*
+    text(tmpCtx, "DIMENSION", -90)
+    text(tmpCtx, "HOPPER", 50)
+    */
 }

@@ -33,8 +33,10 @@ def allowed_file(filename):
 def get_map():
     data = request.get_json()
     map_path = data.get('map_path', '')
-    if not map_path:
+    if map_path == 'random':
         return random_map()
+    if not map_path:
+        return random_map(logo=True)
     folder, filename = os.path.split(map_path)
     try:
         with open(f'{folder}/map.json') as f:
@@ -46,20 +48,24 @@ def get_map():
         })
     except (FileNotFoundError, IndexError):
         print(f'Error loading map {folder}')
-        return random_map()
+        return random_map(logo=True)
 
-def random_map():
-    map_dirs = os.listdir('maps')
+def random_map(logo=False):
+    if logo:
+        base_dir = 'logo_maps'
+    else:
+        base_dir = 'maps'
+    map_dirs = os.listdir(base_dir)
     random_dir = random.choice(map_dirs)
     try:
-        with open(f'maps/{random_dir}/map.json') as f:
+        with open(f'{base_dir}/{random_dir}/map.json') as f:
             map_data = json.load(f)
 
-        image_file = random.choice([f for f in os.listdir(f'maps/{random_dir}') if f.endswith('.png')])
+        image_file = random.choice([f for f in os.listdir(f'{base_dir}/{random_dir}') if f.endswith('.png')])
 
         return jsonify({
             'map': map_data,
-            'image': f'maps/{random_dir}/{image_file}'
+            'image': f'{base_dir}/{random_dir}/{image_file}'
         })
     except (FileNotFoundError, IndexError):
         print(f'Error loading map {random_dir}')

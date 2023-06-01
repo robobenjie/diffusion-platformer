@@ -42,7 +42,10 @@
                 <progress class="progress is-primary" value="0" id="progressBar" max="100">0%</progress>
 
             </div>
+            <a href="/?map_name=random" class="button is-success mt-4">Random Level</a>
             <button id="editButton" class="button is-info mt-4">Edit Map</button>
+            <button id="shareButton" class="button is-info mt-4">Share Level</button>
+
     
             <div id="edit-tools" style="display: none;">
                 <p>Click to edit map. Hold shift for larger areas.</p>
@@ -101,6 +104,25 @@
             </div>
             <div id="fps"></div>
             <pre id="mapDisplay"></pre>
+        </div>
+        <!-- Share Level Modal -->
+        <div class="modal" id="shareModal">
+            <div class="modal-background"></div>
+            <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title">Share Level</p>
+                <button class="delete" aria-label="close" id="closeShareModal"></button>
+            </header>
+            <section class="modal-card-body">
+                <!-- Content -->
+                <p id="shareLink"></p>
+            </section>
+            <footer class="modal-card-foot">
+                <button class="button is-success" id="copyButton">Copy</button>
+                <button class="button" id="closeShareModalFooter">Close</button>
+                <span id="copiedMessage"></span>
+            </footer>
+            </div>
         </div>
         <div class="modal" id="generateCharacterModal">
             <div class="modal-background"></div>

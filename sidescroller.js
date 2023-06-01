@@ -625,6 +625,59 @@ function addURLParameter(paramName, paramValue) {
     // This line will change the URL in the browser without reloading the page.
     window.history.pushState({}, '', currentURL.toString());
 }
+let copyButton = document.getElementById('copyButton');
+let copiedMessage = document.getElementById('copiedMessage');
+
+copyButton.addEventListener('click', function() {
+    // Create a new textarea element and set its value to the URL string
+    let textarea = document.createElement('textarea');
+    textarea.value = shareLink.innerText;
+    // Append the textarea to the body (it will not be visible)
+    document.body.appendChild(textarea);
+    // Select the textarea's contents
+    textarea.select();
+    // Copy the selected contents to the clipboard
+    document.execCommand('copy');
+    // Remove the textarea from the body
+    document.body.removeChild(textarea);
+    // Display the 'copied' message
+    copiedMessage.innerText = 'Copied!';
+    // Clear the 'copied' message after 2 seconds
+    setTimeout(function() {
+        copiedMessage.innerText = '';
+    }, 2000);
+});
+
+document.addEventListener('DOMContentLoaded', (event) => {
+    let shareButton = document.getElementById('shareButton');
+    let shareModal = document.getElementById('shareModal');
+    let closeShareModal = document.getElementById('closeShareModal');
+    let closeShareModalFooter = document.getElementById('closeShareModalFooter');
+    let shareLink = document.getElementById('shareLink');
+  
+    shareButton.addEventListener('click', function() {
+        // Create a URL object from the backgroundImage.src
+        let imgURL = new URL(backgroundImage.src);
+        // Extract the pathname (i.e., the relative URL) from the URL object
+        let imgPath = imgURL.pathname;
+        if (imgPath.charAt(0) === "/") {
+            imgPath = imgPath.substring(1);
+        }
+        let url = new URL(window.location.href);
+        url.searchParams.set('map_name', imgPath);
+        shareLink.innerText = url.toString();
+        shareModal.classList.add('is-active');
+    });
+  
+    closeShareModal.addEventListener('click', function() {
+      shareModal.classList.remove('is-active');
+    });
+  
+    closeShareModalFooter.addEventListener('click', function() {
+      shareModal.classList.remove('is-active');
+    });
+  });
+  
 
 function saveMapImage() {
     // Create a temporary canvas and context
