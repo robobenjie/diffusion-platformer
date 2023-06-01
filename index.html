@@ -21,17 +21,27 @@
     <section class="section">
         <div class="container">
             <div id="scores" class="mt-4">
-                <p id="scorePlayer1">Player 1 Score: 0</p>
-                <a id="changeCharacter1" class="button is-primary">Change Character</a>
-                <button class="button is-primary generateCharacterButton" data-player="1">Generate Character</button>
-                <p id="scorePlayer2">Player 2 Score: 0</p>
-                <a id="changeCharacter2" class="button is-primary">Change Character</a>
-                <button class="button is-primary generateCharacterButton" data-player="2">Generate Character</button>
-
+                <div class="columns">
+                    <div class="column">
+                        <div class="box">
+                            <p id="scorePlayer1">Player 1 Score: 0</p>
+                            <a id="changeCharacter1" class="button is-small">Change Character</a>
+                            <button class="button is-small generateCharacterButton" data-player="1">Generate Character</button>
+                        </div>
+                    </div>
+                    <div class="column">
+                        <div class="box">
+                            <p id="scorePlayer2">Player 2 Score: 0</p>
+                            <a id="changeCharacter2" class="button is-small ">Change Character</a>
+                            <button class="button is-small generateCharacterButton" data-player="2">Generate Character</button>
+                        </div>
+                    </div>
+                </div>
             </div>
             <br>
-            <canvas id="gameCanvas" width="800" height="400" tabindex="0"></canvas>
-
+            <div class="box">
+                <canvas id="gameCanvas" width="800" height="400" tabindex="0"></canvas>
+            </div>
             <br>
             <div class="field has-addons">
                 <div class="control is-expanded">
