@@ -172,8 +172,7 @@ const particleExplotionSpeed = 2.5 * targetFPS;
 // When the player is killed
 function playerKilled(player) {
     // Break the player sprite into particles
-    let dieSound = new Audio('/sounds/pop.wav');
-    dieSound.play().catch(error => {
+    dieSound.cloneNode().play().catch(error => {
         console.log("Error playing audio: ", error);
     });
     for (let i = 0; i < playerExplosionCount; i += 1) {
@@ -276,12 +275,11 @@ function updatePlayer(currentPlayer, otherPlayers, dt) {
     if (gameMap[gemY][gemX] === 2) {
         gameMap[gemY][gemX] = 0;
         currentPlayer.score += 1;
-        gemSound = new Audio("sounds/coin.mp3");
-        gemSound.play().catch(error => {
+        gemSound.cloneNode().play().catch(error => {
             console.log("Error playing audio: ", error);
         });
     }
-    
+
     // Horizontal movement
     if (currentPlayer.moveLeft && currentPlayer.vx > -currentPlayer.maxVx) {
         currentPlayer.vx -= currentPlayer.ax * dt;
