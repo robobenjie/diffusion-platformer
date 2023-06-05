@@ -1,0 +1,244 @@
+accelerate @ git+https://github.com/huggingface/accelerate.git@e0ffea5bc3929dc9fae9da582f3b0f94fb7c4900
+action-msgs==1.2.1
+action-tutorials-interfaces==0.20.3
+action-tutorials-py==0.20.3
+actionlib-msgs==4.2.3
+ament-cmake-test==1.3.4
+ament-copyright==0.12.6
+ament-cppcheck==0.12.6
+ament-cpplint==0.12.6
+ament-flake8==0.12.6
+ament-index-python==1.4.0
+ament-lint==0.12.6
+ament-lint-cmake==0.12.6
+ament-package==0.14.0
+ament-pep257==0.12.6
+ament-uncrustify==0.12.6
+ament-xmllint==0.12.6
+angles==1.15.0
+antlr4-python3-runtime==4.9.3
+asttokens @ file:///home/conda/feedstock_root/build_artifacts/asttokens_1670263926556/work
+backcall @ file:///home/conda/feedstock_root/build_artifacts/backcall_1592338393461/work
+backports.functools-lru-cache @ file:///home/conda/feedstock_root/build_artifacts/backports.functools_lru_cache_1618230623929/work
+bidict==0.22.1
+blinker==1.6.2
+builtin-interfaces==1.2.1
+certifi==2023.5.7
+charset-normalizer==3.1.0
+click==8.1.3
+cmake==3.26.3
+comm @ file:///home/conda/feedstock_root/build_artifacts/comm_1679481329611/work
+composition-interfaces==1.2.1
+control-msgs==4.1.1
+controller-manager-msgs==2.25.2
+controlnet-aux==0.0.4
+cv-bridge==3.2.1
+debugpy @ file:///home/conda/feedstock_root/build_artifacts/debugpy_1680755454898/work
+decorator @ file:///home/conda/feedstock_root/build_artifacts/decorator_1641555617451/work
+demo-nodes-py==0.20.3
+diagnostic-msgs==4.2.3
+diffusers @ git+https://github.com/huggingface/diffusers.git@a94977b8b32b94ccd00d2f8f812aadb46764baba
+domain-coordinator==0.10.0
+einops==0.6.1
+example-interfaces==0.9.3
+examples-rclpy-executors==0.15.1
+examples-rclpy-minimal-action-client==0.15.1
+examples-rclpy-minimal-action-server==0.15.1
+examples-rclpy-minimal-client==0.15.1
+examples-rclpy-minimal-publisher==0.15.1
+examples-rclpy-minimal-service==0.15.1
+examples-rclpy-minimal-subscriber==0.15.1
+executing @ file:///home/conda/feedstock_root/build_artifacts/executing_1667317341051/work
+filelock==3.12.0
+Flask==2.3.2
+Flask-Cors==3.0.10
+Flask-SocketIO==5.3.4
+fsspec==2023.5.0
+geometry-msgs==4.2.3
+h11==0.14.0
+huggingface-hub==0.14.1
+idna==3.4
+image-geometry==3.2.1
+imageio==2.29.0
+importlib-metadata @ file:///home/conda/feedstock_root/build_artifacts/importlib-metadata_1682176699712/work
+interactive-markers==2.3.2
+ipykernel @ file:///home/conda/feedstock_root/build_artifacts/ipykernel_1684162692319/work
+ipython @ file:///home/conda/feedstock_root/build_artifacts/ipython_1683225895562/work
+itsdangerous==2.1.2
+jedi @ file:///home/conda/feedstock_root/build_artifacts/jedi_1669134318875/work
+Jinja2==3.1.2
+jupyter_client @ file:///home/conda/feedstock_root/build_artifacts/jupyter_client_1681432441054/work
+jupyter_core @ file:///home/conda/feedstock_root/build_artifacts/jupyter_core_1678994187655/work
+laser-geometry==2.4.0
+launch==1.0.4
+launch-ros==0.19.4
+launch-testing==1.0.4
+launch-testing-ros==0.19.4
+launch-xml==1.0.4
+launch-yaml==1.0.4
+lazy_loader==0.2
+lifecycle-msgs==1.2.1
+lit==16.0.5
+logging-demo==0.20.3
+map-msgs==2.1.0
+MarkupSafe==2.1.2
+matplotlib-inline @ file:///home/conda/feedstock_root/build_artifacts/matplotlib-inline_1660814786464/work
+message-filters==4.3.3
+mpmath==1.3.0
+mypy-extensions==1.0.0
+nav-msgs==4.2.3
+nest-asyncio @ file:///home/conda/feedstock_root/build_artifacts/nest-asyncio_1664684991461/work
+networkx==3.1
+numpy==1.24.3
+nvidia-cublas-cu11==11.10.3.66
+nvidia-cuda-cupti-cu11==11.7.101
+nvidia-cuda-nvrtc-cu11==11.7.99
+nvidia-cuda-runtime-cu11==11.7.99
+nvidia-cudnn-cu11==8.5.0.96
+nvidia-cufft-cu11==10.9.0.58
+nvidia-curand-cu11==10.2.10.91
+nvidia-cusolver-cu11==11.4.0.1
+nvidia-cusparse-cu11==11.7.4.91
+nvidia-nccl-cu11==2.14.3
+nvidia-nvtx-cu11==11.7.91
+omegaconf==2.3.0
+opencv-contrib-python==4.7.0.72
+opencv-python==4.7.0.72
+osrf-pycommon==2.0.2
+packaging @ file:///home/conda/feedstock_root/build_artifacts/packaging_1681337016113/work
+parso @ file:///home/conda/feedstock_root/build_artifacts/parso_1638334955874/work
+pcl-msgs==1.0.0
+pendulum-msgs==0.20.3
+pexpect @ file:///home/conda/feedstock_root/build_artifacts/pexpect_1667297516076/work
+pickleshare @ file:///home/conda/feedstock_root/build_artifacts/pickleshare_1602536217715/work
+Pillow==9.5.0
+platformdirs @ file:///home/conda/feedstock_root/build_artifacts/platformdirs_1683850015520/work
+prompt-toolkit @ file:///home/conda/feedstock_root/build_artifacts/prompt-toolkit_1677600924538/work
+psutil @ file:///home/conda/feedstock_root/build_artifacts/psutil_1681775010077/work
+ptyprocess @ file:///home/conda/feedstock_root/build_artifacts/ptyprocess_1609419310487/work/dist/ptyprocess-0.7.0-py2.py3-none-any.whl
+pure-eval @ file:///home/conda/feedstock_root/build_artifacts/pure_eval_1642875951954/work
+Pygments @ file:///home/conda/feedstock_root/build_artifacts/pygments_1681904169130/work
+pyre-extensions==0.0.23
+python-dateutil @ file:///home/conda/feedstock_root/build_artifacts/python-dateutil_1626286286081/work
+python-engineio==4.4.1
+python-qt-binding==1.1.1
+python-socketio==5.8.0
+PyWavelets==1.4.1
+PyYAML==6.0
+pyzmq @ file:///home/conda/feedstock_root/build_artifacts/pyzmq_1679316875704/work
+qt-dotgraph==2.2.2
+qt-gui==2.2.2
+qt-gui-cpp==2.2.2
+qt-gui-py-common==2.2.2
+quality-of-service-demo-py==0.20.3
+rcl-interfaces==1.2.1
+rclpy==3.3.8
+rcutils==5.1.3
+regex==2023.5.5
+requests==2.31.0
+resource-retriever==3.1.1
+rmw-dds-common==1.6.0
+ros2action==0.18.6
+ros2bag==0.15.5
+ros2cli==0.18.6
+ros2component==0.18.6
+ros2doctor==0.18.6
+ros2interface==0.18.6
+ros2launch==0.19.4
+ros2lifecycle==0.18.6
+ros2multicast==0.18.6
+ros2node==0.18.6
+ros2param==0.18.6
+ros2pkg==0.18.6
+ros2run==0.18.6
+ros2service==0.18.6
+ros2topic==0.18.6
+rosbag2-interfaces==0.15.5
+rosbag2-py==0.15.5
+rosgraph-msgs==1.2.1
+rosidl-adapter==3.1.4
+rosidl-cli==3.1.4
+rosidl-cmake==3.1.4
+rosidl-generator-c==3.1.4
+rosidl-generator-cpp==3.1.4
+rosidl-generator-py==0.14.4
+rosidl-parser==3.1.4
+rosidl-runtime-py==0.9.3
+rosidl-typesupport-c==2.0.0
+rosidl-typesupport-cpp==2.0.0
+rosidl-typesupport-fastrtps-c==2.2.0
+rosidl-typesupport-fastrtps-cpp==2.2.0
+rosidl-typesupport-introspection-c==3.1.4
+rosidl-typesupport-introspection-cpp==3.1.4
+rpyutils==0.2.1
+rqt==1.1.5
+rqt-action==2.0.1
+rqt-bag==1.1.4
+rqt-bag-plugins==1.1.4
+rqt-console==2.0.2
+rqt-controller-manager==2.25.2
+rqt-graph==1.3.0
+rqt-gui==1.1.5
+rqt-gui-py==1.1.5
+rqt-joint-trajectory-controller==2.17.3
+rqt-moveit==1.0.1
+rqt-msg==1.2.0
+rqt-plot==1.1.2
+rqt-publisher==1.5.0
+rqt-py-common==1.1.5
+rqt-py-console==1.0.2
+rqt-reconfigure==1.1.1
+rqt-robot-dashboard==0.5.8
+rqt-robot-monitor==1.0.5
+rqt-robot-steering==1.0.0
+rqt-runtime-monitor==1.0.0
+rqt-service-caller==1.0.5
+rqt-shell==1.0.2
+rqt-srv==1.0.3
+rqt-tf-tree==1.0.4
+rqt-topic==1.5.0
+safetensors==0.3.1
+scikit-image==0.20.0
+scipy==1.10.1
+sensor-msgs==4.2.3
+sensor-msgs-py==4.2.3
+shape-msgs==4.2.3
+simple-websocket==0.10.0
+six @ file:///home/conda/feedstock_root/build_artifacts/six_1620240208055/work
+sros2==0.10.4
+stack-data @ file:///home/conda/feedstock_root/build_artifacts/stack_data_1669632077133/work
+statistics-msgs==1.2.1
+std-msgs==4.2.3
+std-srvs==4.2.3
+stereo-msgs==4.2.3
+sympy==1.12
+teleop-twist-keyboard==2.3.2
+tf2-geometry-msgs==0.25.2
+tf2-kdl==0.25.2
+tf2-msgs==0.25.2
+tf2-py==0.25.2
+tf2-ros-py==0.25.2
+tf2-tools==0.25.2
+tifffile==2023.4.12
+timm==0.9.2
+tokenizers==0.13.3
+topic-monitor==0.20.3
+torch==2.0.1
+torchvision==0.15.2
+tornado @ file:///home/conda/feedstock_root/build_artifacts/tornado_1684150209296/work
+tqdm==4.65.0
+traitlets @ file:///home/conda/feedstock_root/build_artifacts/traitlets_1675110562325/work
+trajectory-msgs==4.2.3
+transformers==4.29.2
+triton==2.0.0
+turtlesim==1.4.2
+typing-inspect==0.8.0
+typing_extensions @ file:///home/conda/feedstock_root/build_artifacts/typing_extensions_1684841349287/work
+unique-identifier-msgs==2.2.1
+urllib3==2.0.2
+visualization-msgs==4.2.3
+wcwidth @ file:///home/conda/feedstock_root/build_artifacts/wcwidth_1673864653149/work
+Werkzeug==2.3.4
+wsproto==1.2.0
+xformers==0.0.16
+zipp @ file:///home/conda/feedstock_root/build_artifacts/zipp_1677313463193/work
