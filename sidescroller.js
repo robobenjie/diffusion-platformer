@@ -1,5 +1,5 @@
 import { isEditMode, tileSize, gameMap, mapHeight, mapWidth, setMap, loadStyles,
-     drawMap, setMapChangeCallback, setIsEditMode, getCurrentStyle} from './level_edit.js';
+     drawMap, setMapChangeCallback, setIsEditMode, getCurrentStyle, styles, setStyle} from './level_edit.js';
 import { setChangeSpriteCallback, randomizePlayerSprite } from './character_select.js';
 
 const canvas = document.getElementById('gameCanvas');
@@ -587,6 +587,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     let shareLink = document.getElementById('shareLink');
   
     shareButton.addEventListener('click', function() {
+
         // Create a URL object from the backgroundImage.src
         let imgURL = new URL(backgroundImage.src);
         // Extract the pathname (i.e., the relative URL) from the URL object
@@ -608,7 +609,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
       shareModal.classList.remove('is-active');
     });
   });
-  
+
 
 function saveMapImage() {
     // Create a temporary canvas and context
@@ -625,10 +626,6 @@ function saveMapImage() {
 
     // Generate the data URL and create an anchor element to download the image
     const dataURL = tempCanvas.toDataURL('image/png');
-    const link = document.createElement('a');
-    link.href = dataURL;
-    link.download = 'map.png';
-    //link.click();
     fetch('/save', {
         method: 'POST',
         headers: {

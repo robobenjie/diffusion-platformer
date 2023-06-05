@@ -239,7 +239,7 @@ document.getElementById('architectureToggle').addEventListener('change', (event)
 /**********************
  * Styles             *
  * ********************/
-let styles = []
+export let styles = []
 export function loadStyles() {
     fetch('/styles')
     .then(response => response.json())
