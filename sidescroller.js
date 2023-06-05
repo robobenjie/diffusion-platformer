@@ -23,6 +23,7 @@ let socket = io();
 let lastGemSpawn = Date.now();
 
 let backgroundImage = new Image();
+let newBackgroundImage = new Image();
 let collectibleImage = new Image();
 
 //backgroundImage.src = "example_background.png";
@@ -233,12 +234,78 @@ function render_gems(ctx) {
         }
     }
 }
+let animationProgress = null;
+const animationLength = 0.5; // seconds
+function renderBackgroundImage(ctx, dt) {
+    if (animationProgress !== null) {
+        // An animation is in progress
+        animationProgress += dt;
+        console.log("Animation progress: ", animationProgress);
 
-function renderBackgroundImage(ctx, image) {
-    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+        // Draw the old image in full
+        ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+
+        // Calculate the current width based on animation progress
+        const currentWidth = animationProgress / animationLength * canvas.width;
+
+        // Draw the new image only up to the current width
+        // The parameters here are (image, sourceX, sourceY, sourceWidth, sourceHeight, destX, destY, destWidth, destHeight)
+        ctx.drawImage(newBackgroundImage, 0, 0, currentWidth, newBackgroundImage.height, 0, 0, currentWidth * (canvas.width / newBackgroundImage.width), canvas.height);
+
+
+        // Check if animation is finished
+        if (animationProgress >= animationLength) {
+            // Animation complete, set newImage as backgroundImage
+            backgroundImage = newBackgroundImage;
+            animationProgress = null;
+        }
+    } else {
+        // No animation, render the image as usual
+        ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+    }
+}
+
+function drawJaggedLine(ctx, x1, y1, x2, y2, numSections, maxDeviation) {
+    // Calculate the length of the line and the segment length
+    let lineLength = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+    let segmentLength = lineLength / numSections;
+
+    // Start the line
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+
+    for (let i = 1; i < numSections; i++) {
+        // Calculate the direction of the line
+        let angle = Math.atan2(y2 - y1, x2 - x1);
+
+        // Calculate the direction of the perpendicular
+        let perpAngle = angle - Math.PI / 2;
+
+        // Calculate the segment end
+        let segmentEndX = x1 + Math.cos(angle) * segmentLength * i;
+        let segmentEndY = y1 + Math.sin(angle) * segmentLength * i;
+
+        // Calculate the deviation
+        let deviation = Math.abs((Math.random() -1) * maxDeviation);
+
+        // Calculate the point to draw to
+        let x = segmentEndX + Math.cos(perpAngle) * deviation;
+        let y = segmentEndY + Math.sin(perpAngle) * deviation;
+
+        // Draw to the calculated point
+        ctx.lineTo(x, y);
+    }
+
+   // stroke the line as thick and white
+    ctx.lineWidth = 5;
+    ctx.strokeStyle = "white";
+    ctx.stroke();
 }
 
 function renderForegroundImageParts(ctx, foregroundImage) {
+    // Calculate the current width based on animation progress
+    const currentX = animationProgress / animationLength * canvas.width;
+
     for (let i = 0; i < mapHeight; i++) {
         for (let j = 0; j < mapWidth; j++) {
             if (gameMap[i][j] === 1) {               
@@ -250,9 +317,17 @@ function renderForegroundImageParts(ctx, foregroundImage) {
                 let dHeight = tileSize + topBuffer;
                 
                 // Draw the portion of the image that corresponds to the wall section on the canvas
-                ctx.drawImage(foregroundImage, dx, dy, dWidth, dHeight, dx, dy, dWidth, dHeight);
+                if (dx < currentX) {
+                    ctx.drawImage(newBackgroundImage, dx, dy, dWidth, dHeight, dx, dy, dWidth, dHeight);
+                } else {
+                  ctx.drawImage(foregroundImage, dx, dy, dWidth, dHeight, dx, dy, dWidth, dHeight);
+                }
             }
         }
+    }
+    if (animationProgress !== null) {
+        drawJaggedLine(ctx, currentX, 0, currentX, canvas.height, 100, 10);
+        drawJaggedLine(ctx, currentX, 0, currentX, canvas.height, 50, 30);
     }
 }
 
@@ -644,7 +719,8 @@ function saveMapImage() {
     .then(data => {
         let img = new Image();
         img.onload = function() {
-            backgroundImage.src = this.src;
+            newBackgroundImage = img;
+            animationProgress = 0;  // Start animation
         }
         img.src = data.image;
         currentImageStyle = data.style;
@@ -699,7 +775,7 @@ function gameLoop() {
     } else {
         document.getElementById("edit-tools").style.display = "none";
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        renderBackgroundImage(ctx, backgroundImage);
+        renderBackgroundImage(ctx, dt);
         render_gems(ctx);
         updatePlayer(player, [player2], dt);
         updatePlayer(player2, [player], dt);
