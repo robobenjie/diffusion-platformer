@@ -18,7 +18,8 @@ import generate_images
 
 app = Flask(__name__, static_folder='.', static_url_path='')
 app.config['SECRET_KEY'] = 'your secret key'
-socketio = SocketIO(app)
+socketio = SocketIO(app, cors_allowed_origins='*')
+
 styles = []
 
 @app.route('/')
