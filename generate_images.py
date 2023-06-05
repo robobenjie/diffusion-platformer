@@ -69,7 +69,7 @@ def getBackground(prompt, image, callback=None):
             output = pipe(
                 full_prompt,
                 image,
-                negative_prompt="monochrome, lowres, bad anatomy, worst quality, low quality",
+                negative_prompt="monochrome, lowres, bad anatomy, worst quality, low quality, (watermark) (label) (signature) (frames) (text)",
                 num_inference_steps=NUM_STEPS,
                 generator=generator,
                 callback=callback,

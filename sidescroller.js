@@ -271,6 +271,17 @@ function updatePlayer(currentPlayer, otherPlayers, dt) {
         respawnPlayer(currentPlayer);
         return
     }
+    const gemX = Math.floor(currentPlayer.x / tileSize);
+    const gemY = Math.floor(currentPlayer.y / tileSize);
+    if (gameMap[gemY][gemX] === 2) {
+        gameMap[gemY][gemX] = 0;
+        currentPlayer.score += 1;
+        gemSound = new Audio("sounds/coin.mp3");
+        gemSound.play().catch(error => {
+            console.log("Error playing audio: ", error);
+        });
+    }
+    
     // Horizontal movement
     if (currentPlayer.moveLeft && currentPlayer.vx > -currentPlayer.maxVx) {
         currentPlayer.vx -= currentPlayer.ax * dt;
@@ -331,17 +342,6 @@ function updatePlayer(currentPlayer, otherPlayers, dt) {
     } else if (isColliding(currentPlayer.x, currentPlayer.y - currentPlayer.size / 2, collisionBoxWidthFraction * currentPlayer.size)) { // Ceiling collision
         currentPlayer.y = Math.ceil((currentPlayer.y - currentPlayer.size / 2) / tileSize) * tileSize + currentPlayer.size / 2;
         currentPlayer.vy = 0.01 * targetFPS; // Math.Min(0, currentPlayer.vy);
-    }
-
-    const gemX = Math.floor(currentPlayer.x / tileSize);
-    const gemY = Math.floor(currentPlayer.y / tileSize);
-    if (gameMap[gemY][gemX] === 2) {
-        gameMap[gemY][gemX] = 0;
-        currentPlayer.score += 1;
-        gemSound = new Audio("sounds/coin.mp3");
-        gemSound.play().catch(error => {
-            console.log("Error playing audio: ", error);
-        });
     }
 }
 
