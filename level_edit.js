@@ -287,7 +287,7 @@ document.getElementById("saveStyle").addEventListener("click", function() {
 
 export function getCurrentStyle() {
     return {
-        style_name: document.getElementById('styleName').value,
+        style_name: document.getElementById('styleDropdown').value,
         prompt: levelDescription,
         backgroundBrightness: backgroundBrightness,
         architecture: architecture,
