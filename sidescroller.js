@@ -1,5 +1,6 @@
 import { isEditMode, tileSize, gameMap, mapHeight, mapWidth, setMap, loadStyles,
-     drawMap, setMapChangeCallback, setIsEditMode, getCurrentStyle, styles, setStyle, getMapEditorImage} from './level_edit.js';
+     drawMap, setMapChangeCallback, setIsEditMode, getCurrentStyle, styles, setStyle, getMapEditorImage,
+     saveAllStyleImages} from './level_edit.js';
 import { setChangeSpriteCallback, randomizePlayerSprite } from './character_select.js';
 
 const canvas = document.getElementById('gameCanvas');
@@ -36,7 +37,7 @@ let pointsSinceHop = 0;
 window.onload = function() {
     const urlParams = new URLSearchParams(window.location.search);
     console.log("Map name", urlParams.get('map_name'));
-    fetch('/get_map', {
+    let map_promise = fetch('/get_map', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -53,18 +54,30 @@ window.onload = function() {
         respawnPlayer(player2);
         gameCanvas.focus();
         currentImageStyle = data.style;
+        return data;
     })
     .catch((error) => {
       console.error('Error:', error);
     });
-    fetch('/random_collectible')
+
+    let collectible_promise = fetch('/random_collectible')
     .then(response => response.json())
     .then(data => {
         collectibleImage.src = data.image;
-    })
+        return data;
+    });
+
     randomizePlayerSprite(1);
     randomizePlayerSprite(2);
-    loadStyles();
+
+    let style_promise = loadStyles();
+
+    Promise.all([map_promise, style_promise, collectible_promise]).then(values => {
+        // at this point, both the map and styles are loaded
+        let mapDataImage = values[0].image; 
+        let folder = mapDataImage.split('/').slice(0, 2).join('/');
+        saveAllStyleImages(folder);  // call your method that needs both map and styles
+    });
 }
 
 
@@ -683,6 +696,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
         let url = new URL(window.location.href);
         url.searchParams.set('map_name', imgPath);
+
         shareLink.innerText = url.toString();
         shareModal.classList.add('is-active');
     });

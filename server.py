@@ -153,6 +153,21 @@ def get_map_for_style(folder, style):
         if map_data.get('style_name', 'source_name') == style.get('style_name', 'different_name'):
             return f'{folder}/background_image_{json_file.replace("_style.json", ".png")}'
 
+@app.route('/save_style_maps', methods=['POST'])
+def save_style_maps():
+    data = request.get_json()
+    folder = data.get('folderName', '')
+    style_folder = os.path.join(folder, 'style_maps')
+    os.makedirs(style_folder, exist_ok=True)
+    for style_name, image_data in data.get('images', []):
+        with open(f'{style_folder}/{style_name}.png', 'wb') as f:
+            image_data = image_data.replace('data:image/png;base64,', '')
+            image_bytes = base64.b64decode(image_data)
+            image = Image.open(BytesIO(image_bytes))
+            image.save(f)
+    return jsonify(success=True), 200
+
+
 @app.route('/save', methods=['POST'])
 def save_image():
     data = request.get_json()

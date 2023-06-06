@@ -252,33 +252,34 @@ document.getElementById('architectureToggle').addEventListener('change', (event)
  * ********************/
 export let styles = []
 export function loadStyles() {
-    fetch('/styles')
-    .then(response => response.json())
-    .then(data => {
-        styles = data;
-        // Populate the dropdown with the style names
-        let dropdown = document.getElementById('styleDropdown');
-        styles.forEach(style => {
+    return fetch('/styles')
+        .then(response => response.json())
+        .then(data => {
+            styles = data;
+            // Populate the dropdown with the style names
+            let dropdown = document.getElementById('styleDropdown');
+            styles.forEach(style => {
+                let option = document.createElement('option');
+                option.text = style.style_name;
+                dropdown.add(option);
+            });
             let option = document.createElement('option');
-            option.text = style.style_name;
+            option.text = "Custom";
             dropdown.add(option);
-        });
-        let option = document.createElement('option');
-        option.text = "Custom";
-        dropdown.add(option);
 
-        // Randomly select a style on load
-        let randomIndex = Math.floor(Math.random() * styles.length);
-        dropdown.selectedIndex = randomIndex;
-        setStyle(dropdown.options[randomIndex].text);
-        // Add an event listener to update the style when a dropdown option is selected
-        dropdown.addEventListener('change', function() {
-            setStyle(this.value);
-        });
-    })
+            // Randomly select a style on load
+            let randomIndex = Math.floor(Math.random() * styles.length);
+            dropdown.selectedIndex = randomIndex;
+            setStyle(dropdown.options[randomIndex].text);
+            // Add an event listener to update the style when a dropdown option is selected
+            dropdown.addEventListener('change', function() {
+                setStyle(this.value);
+            });
+            return styles;  // return the loaded styles
+        })
         .catch((error) => {
-        console.error('Error:', error);
-    });
+            console.error('Error:', error);
+        });
 }
 
 document.getElementById("saveStyle").addEventListener("click", function() {
@@ -308,6 +309,24 @@ function saveStyle() {
     })
 }
 
+export function saveAllStyleImages(folderName) {
+    let startStyle = getCurrentStyle();
+    let images = [];
+    for(let i = 0; i < styles.length; i++) {
+        let style = styles[i];
+        setStyle(style.style_name);
+        images.push([style.style_name, getMapEditorImage()]);
+    }
+    setStyle(startStyle.style_name);
+    fetch('/save_style_maps', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({folderName: folderName, images: images}),
+    })
+}
+
 export function setStyle(style_name) {
     // Find the style with the matching name
     if (style_name === 'Custom') {
@@ -325,6 +344,7 @@ export function setStyle(style_name) {
     }
     
     // Set the form inputs to match the style
+    document.getElementById('styleDropdown').value = style.style_name;
     document.getElementById('architectureToggle').checked = style.architecture;
     architecture = style.architecture;
     document.getElementById('bgSlider').value = style.backgroundBrightness;
