@@ -139,7 +139,10 @@ def save_style():
     print(data)
     styles.append(data)
     with open('styles.json', 'w') as f:
-        f.write(json.dumps(styles))
+        f.write("[\n")
+        for l in styles:
+            f.write(json.dumps(l) + ",\n")
+        f.write("]\n")
     return jsonify(success=True), 200
 
 def get_map_for_style(folder, style):
