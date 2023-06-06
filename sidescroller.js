@@ -7,6 +7,7 @@ const ctx = canvas.getContext('2d');
 
 let dieSound = new Audio('/sounds/pop.wav');
 let gemSound = new Audio('/sounds/coin.mp3');
+let changeBackgroundSound = new Audio('/sounds/change_background.mp3');
 let currentImageStyle = null;
 const collisionBoxWidthFraction = 0.5;
 
@@ -25,6 +26,7 @@ let lastGemSpawn = Date.now();
 let backgroundImage = new Image();
 let newBackgroundImage = new Image();
 let collectibleImage = new Image();
+let pointsSinceHop = 0;
 
 //backgroundImage.src = "example_background.png";
 
@@ -240,7 +242,6 @@ function renderBackgroundImage(ctx, dt) {
     if (animationProgress !== null) {
         // An animation is in progress
         animationProgress += dt;
-        console.log("Animation progress: ", animationProgress);
 
         // Draw the old image in full
         ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
@@ -297,8 +298,8 @@ function drawJaggedLine(ctx, x1, y1, x2, y2, numSections, maxDeviation) {
     }
 
    // stroke the line as thick and white
-    ctx.lineWidth = 5;
-    ctx.strokeStyle = "white";
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = "cyan";
     ctx.stroke();
 }
 
@@ -328,6 +329,7 @@ function renderForegroundImageParts(ctx, foregroundImage) {
     if (animationProgress !== null) {
         drawJaggedLine(ctx, currentX, 0, currentX, canvas.height, 100, 10);
         drawJaggedLine(ctx, currentX, 0, currentX, canvas.height, 50, 30);
+        drawJaggedLine(ctx, currentX, 0, currentX, canvas.height, 20, 50);
     }
 }
 
@@ -350,6 +352,12 @@ function updatePlayer(currentPlayer, otherPlayers, dt) {
     if (gameMap[gemY][gemX] === 2) {
         gameMap[gemY][gemX] = 0;
         currentPlayer.score += 1;
+        pointsSinceHop += 1;
+        if (pointsSinceHop >= 20) {
+            pointsSinceHop = 0;
+            hopToRandomStyle();
+
+        }
         gemSound.cloneNode().play().catch(error => {
             console.log("Error playing audio: ", error);
         });
@@ -685,12 +693,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
     });
   });
 
-
-function saveMapImage() {
-    // Create a temporary canvas and context
-    document.getElementById('progressStatus').textContent = 'Submitted.';
-    document.getElementById('progressContainer').style.display = "block";
-    document.getElementById('progressBar').value = 3;
+ 
+function getMapEditorImage() {
     const tempCanvas = document.createElement('canvas');
     tempCanvas.width = mapWidth * tileSize;
     tempCanvas.height = mapHeight * tileSize;
@@ -700,7 +704,16 @@ function saveMapImage() {
     drawMap(tempCtx);
 
     // Generate the data URL and create an anchor element to download the image
-    const dataURL = tempCanvas.toDataURL('image/png');
+    return tempCanvas.toDataURL('image/png');
+}
+
+function saveMapImage() {
+    // Create a temporary canvas and context
+    document.getElementById('progressStatus').textContent = 'Submitted.';
+    document.getElementById('progressContainer').style.display = "block";
+    document.getElementById('progressBar').value = 3;
+    const dataURL = getMapEditorImage();
+
     fetch('/save', {
         method: 'POST',
         headers: {
@@ -721,6 +734,7 @@ function saveMapImage() {
         img.onload = function() {
             newBackgroundImage = img;
             animationProgress = 0;  // Start animation
+            changeBackgroundSound.cloneNode(true).play();
         }
         img.src = data.image;
         currentImageStyle = data.style;
@@ -736,8 +750,13 @@ function saveMapImage() {
     .catch((error) => {
     console.error('Error:', error);
     });
+}
 
-
+// hop to random style
+function hopToRandomStyle() {
+    let style = styles[Math.floor(Math.random() * styles.length)];
+    setStyle(style.style_name);
+    saveMapImage();
 }
 
 // Listen for the 'progress' event
