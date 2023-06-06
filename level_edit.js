@@ -44,8 +44,19 @@ export function setMapChangeCallback(callback) {
  * Map Editing       *
  * ******************/
 export let isEditMode = false;
+let editStartMap = null;
 
 export function setIsEditMode(editMode) {
+    // Keep a copy of gameMap
+    if (!isEditMode && editMode) {
+      editStartMap = JSON.parse(JSON.stringify(gameMap));
+    }
+    // If we are leaving edit mode, check if the map has changed
+    if (isEditMode && !editMode) {
+        if (JSON.stringify(editStartMap) !== JSON.stringify(gameMap)) {
+            if (mapChangeCallback) mapChangeCallback(getMapEditorImage());
+        }
+    }
     isEditMode = editMode;
 }
 
@@ -173,7 +184,7 @@ let backgroundBrightness = 0;
 let architecture = true;
 
 document.getElementById("editButton").addEventListener("click", function() {
-    isEditMode = !isEditMode;
+    setIsEditMode(!isEditMode);
     this.textContent = isEditMode ? "Play Game" : "Edit Map";
     drawMap(ctx);
 });
@@ -301,7 +312,7 @@ export function setStyle(style_name) {
     // Find the style with the matching name
     if (style_name === 'Custom') {
         document.getElementById('style-edit-tools').style.display = 'block';
-        isEditMode = true;
+        setIsEditMode(true);
         drawMap(ctx);
         return;
     } else {
@@ -458,6 +469,19 @@ for (let i = 0; i < colors.length; i++) {
     ctx.fillText(text, x + (colors.length - i), y + y_offset - (colors.length - i));
 }
 ctx.fillText(text, x, y + y_offset);
+}
+
+export function getMapEditorImage() {
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = mapWidth * tileSize;
+    tempCanvas.height = mapHeight * tileSize;
+    const tempCtx = tempCanvas.getContext('2d');
+
+    // Draw the map on the temporary canvas
+    drawMap(tempCtx);
+
+    // Generate the data URL and create an anchor element to download the image
+    return tempCanvas.toDataURL('image/png');
 }
 
 export function drawMap(tmpCtx, wallColor = '#989898', topColor = '#dfdfdf') {

@@ -1,5 +1,5 @@
 import { isEditMode, tileSize, gameMap, mapHeight, mapWidth, setMap, loadStyles,
-     drawMap, setMapChangeCallback, setIsEditMode, getCurrentStyle, styles, setStyle} from './level_edit.js';
+     drawMap, setMapChangeCallback, setIsEditMode, getCurrentStyle, styles, setStyle, getMapEditorImage} from './level_edit.js';
 import { setChangeSpriteCallback, randomizePlayerSprite } from './character_select.js';
 
 const canvas = document.getElementById('gameCanvas');
@@ -116,9 +116,12 @@ const player2 = {
     leftSprite: new Image(),
 };
 
-setMapChangeCallback(function() {
+setMapChangeCallback(function(EditMapBackgroundImage) {
     respawnPlayer(player);
     respawnPlayer(player2);
+    if (EditMapBackgroundImage != null) {
+        backgroundImage.src = EditMapBackgroundImage;
+    }
 });
 
 
@@ -693,19 +696,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     });
   });
 
- 
-function getMapEditorImage() {
-    const tempCanvas = document.createElement('canvas');
-    tempCanvas.width = mapWidth * tileSize;
-    tempCanvas.height = mapHeight * tileSize;
-    const tempCtx = tempCanvas.getContext('2d');
 
-    // Draw the map on the temporary canvas
-    drawMap(tempCtx);
-
-    // Generate the data URL and create an anchor element to download the image
-    return tempCanvas.toDataURL('image/png');
-}
 
 function saveMapImage() {
     // Create a temporary canvas and context
