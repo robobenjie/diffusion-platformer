@@ -58,6 +58,8 @@ def notifyCharacterCreationQueue():
 def getBackground(prompt, image, callback=None):
     if pipe is None:
         createLevelPipe()
+    if callback is None:
+        callback = lambda *args, **kwargs: None
     seed = np.random.randint(0, 2 ** 32 - 1)
     print("seed", seed)
     full_prompt = PROMPT_TEMPLATE.format(user_prompt=prompt)

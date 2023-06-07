@@ -12,6 +12,9 @@ import json
 from collections import defaultdict
 import random
 import uuid
+import argparse
+import threading
+import time
 
 
 import generate_images
@@ -275,9 +278,67 @@ def get_random_map():
             'map': new_map,
             })
    
+def get_maps_to_create():
+    base_dir = 'maps'
+
+    # Result list for directories without corresponding style JSON
+    missing_styles = []
+
+    # Traverse directory structure
+    for folder_name in os.listdir(base_dir):
+        folder_path = os.path.join(base_dir, folder_name)
+        if os.path.isdir(folder_path):
+            style_maps_path = os.path.join(folder_path, 'style_maps')
+            if os.path.exists(style_maps_path):
+                # Get the style PNG names
+                style_pngs = [f[:-4] for f in os.listdir(style_maps_path) if f.endswith('.png')] # removes '.png'
+                # Get the style JSON names
+                style_jsons = []
+                for f in os.listdir(folder_path):
+                    if f.endswith('_style.json'):
+                        json_path = os.path.join(folder_path, f)
+                        with open(json_path, 'r') as json_file:
+                            data = json.load(json_file)
+                            style_jsons.append(data.get('style_name'))
+                # Check if any style PNGs don't have corresponding style JSON
+                for style_png in style_pngs:
+                    if style_png not in style_jsons:
+                        missing_styles.append(f'{folder_path}/style_maps/{style_png}.png')
+    return missing_styles
+
+def background_task():
+    maps_to_create = get_maps_to_create()
+    np.random.shuffle(maps_to_create)
+    for styled_image in maps_to_create:
+        print(f'Background Rendering map for {styled_image}')
+        style = [s for s in styles if s['style_name'] in styled_image][0]
+        promt = style['prompt']
+        generated_background = generate_images.getBackground(promt, Image.open(styled_image))
+        uid = uuid.uuid1()
+        folder = styled_image.split('/')[1]
+        file_name = f'maps/{folder}/background_image_{uid}.png'
+        generated_background[0].save(file_name)
+        with open (f'maps/{folder}/{uid}_style.json', 'w') as f:
+            f.write(json.dumps(style))
+
 @app.route('/<path:path>')
 def serve_file(path):
     return send_from_directory(app.static_folder, path)
 
 if __name__ == "__main__":
-    socketio.run(app, port=8000)
+    parser = argparse.ArgumentParser(description="Start the Flask application.")
+    parser.add_argument('--debug', action='store_true', help='Start the app in debug mode')
+    parser.add_argument('--port', type=int, help='Specify the port number to use')
+    parser.add_argument('--background-render', dest='background_render', action='store_true', help='Render images in the background')
+    parser.set_defaults(background_render=False)
+    parser.set_defaults(port=8000)
+    args = parser.parse_args()
+
+    if args.background_render:
+        with app.app_context():
+            load_styles()
+            thread = threading.Thread(target=background_task)
+            thread.daemon = True
+            thread.start()
+
+    socketio.run(app, debug=args.debug, port=args.port)
