@@ -72,12 +72,12 @@ window.onload = function() {
 
     let style_promise = loadStyles();
 
-    Promise.all([map_promise, style_promise, collectible_promise]).then(values => {
+    /*Promise.all([map_promise, style_promise, collectible_promise]).then(values => {
         // at this point, both the map and styles are loaded
         let mapDataImage = values[0].image; 
         let folder = mapDataImage.split('/').slice(0, 2).join('/');
         saveAllStyleImages(folder);  // call your method that needs both map and styles
-    });
+    });*/
 }
 
 
