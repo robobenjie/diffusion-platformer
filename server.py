@@ -233,7 +233,7 @@ def get_random_map():
     for root, dirs, files in os.walk(folder):
         for file in files:
             # Check for .json extension
-            if file.endswith('.json'):
+            if file == 'map.json':
                 with open(os.path.join(root, file), 'r') as json_file:
                     map_data = json.load(json_file)
                     maps.append(map_data)
