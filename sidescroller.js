@@ -415,7 +415,7 @@ function updatePlayer(currentPlayer, otherPlayers, dt) {
 
     // Horizontal collision
 
-    const newX = currentPlayer.x + currentPlayer.vx;
+    const newX = currentPlayer.x + currentPlayer.vx * dt * targetFPS;
     if (isColliding(newX, currentPlayer.y, currentPlayer.size * collisionBoxWidthFraction)) {
         currentPlayer.vx = 0;
     } else {
