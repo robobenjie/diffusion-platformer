@@ -9,7 +9,7 @@ import torch
 from diffusers import DPMSolverMultistepScheduler
 import uuid
 
-NUM_STEPS = 30
+NUM_STEPS = 10
 CHARACTER_NUM_STEPS = 20
 
 
@@ -55,13 +55,12 @@ def notifyCharacterCreationQueue():
     for i, callback in enumerate(waiting_on_character_callbacks):
         callback(place_in_line=total - i)
 
-def getBackground(prompt, image, callback=None):
+def getBackground(prompt, image, callback=None, num_steps=NUM_STEPS):
     if pipe is None:
         createLevelPipe()
     if callback is None:
         callback = lambda *args, **kwargs: None
     seed = np.random.randint(0, 2 ** 32 - 1)
-    print("seed", seed)
     full_prompt = PROMPT_TEMPLATE.format(user_prompt=prompt)
     generator = [torch.Generator(device="cpu").manual_seed(seed)]
     waiting_on_background_callbacks.insert(0, callback)
@@ -72,7 +71,7 @@ def getBackground(prompt, image, callback=None):
                 full_prompt,
                 image,
                 negative_prompt="monochrome, lowres, bad anatomy, worst quality, low quality, (watermark) (label) (signature) (frames) (text)",
-                num_inference_steps=NUM_STEPS,
+                num_inference_steps=num_steps,
                 generator=generator,
                 callback=callback,
             )
