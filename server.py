@@ -2,7 +2,6 @@ import os
 import numpy as np
 from flask import Flask, send_from_directory, request, jsonify
 from flask_cors import CORS
-from flask_socketio import SocketIO
 import random
 import base64
 from PIL import Image
@@ -22,7 +21,6 @@ import map_creation
 
 app = Flask(__name__, static_folder='.', static_url_path='')
 app.config['SECRET_KEY'] = 'your secret key'
-socketio = SocketIO(app, cors_allowed_origins='*')
 CORS(app)
 
 styles = []
@@ -294,4 +292,4 @@ if __name__ == "__main__":
             thread.daemon = True
             thread.start()
 
-    socketio.run(app, debug=args.debug, port=args.port)
+    app.run(debug=args.debug, port=args.port)

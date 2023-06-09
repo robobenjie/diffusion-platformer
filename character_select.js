@@ -3,7 +3,6 @@
  * Generate Character Code    *
  * ****************************/
 
-let socket = io();
 let setPlayerSprite = null;
 export function setChangeSpriteCallback(callback) {
     setPlayerSprite = callback;

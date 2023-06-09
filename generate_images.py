@@ -56,6 +56,8 @@ def notifyCharacterCreationQueue():
         callback(place_in_line=total - i)
 
 def getBackground(prompt, image, callback=None, num_steps=NUM_STEPS):
+    waiting_on_background_callbacks.insert(0, callback)
+    notifyBackgroundCreationQueue()
     if pipe is None:
         createLevelPipe()
     if callback is None:
@@ -63,8 +65,7 @@ def getBackground(prompt, image, callback=None, num_steps=NUM_STEPS):
     seed = np.random.randint(0, 2 ** 32 - 1)
     full_prompt = PROMPT_TEMPLATE.format(user_prompt=prompt)
     generator = [torch.Generator(device="cpu").manual_seed(seed)]
-    waiting_on_background_callbacks.insert(0, callback)
-    notifyBackgroundCreationQueue()
+
     with backgroundCreationLock:
         try:
             output = pipe(

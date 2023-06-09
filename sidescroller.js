@@ -20,8 +20,6 @@ const maxGemCount = 4; // Maximum number of gems on the screen at once
 
 const targetFPS = 165;
 
-let socket = io();
-
 let lastGemSpawn = Date.now();
 
 let backgroundImage = new Image();
@@ -774,8 +772,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     document.getElementById('progressBar').value = 3;
     const dataURL = getMapEditorImage();
 
-    let identifier = 'yourIdentifier';  // Assign your identifier here
-
+    let identifier =  Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
     fetch('/save', {
         method: 'POST',
         headers: {
