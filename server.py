@@ -196,17 +196,15 @@ def save_style_maps():
 def save_image():
     data = request.get_json()
     image_data = data.get('image', '')
-    promt = data.get('prompt', 'videogame level')
+    prompt = data.get('prompt', 'videogame level')
     map_object = data.get('mapData', 'NO MAP')
     style = data.get('style', {})
-    
-    map_bytes = json.dumps(map_object, sort_keys=True).encode()
-    # Create a SHA-256 hash of the map data
-    hash_object = hashlib.sha256(map_bytes)
+    identifier = data.get('identifier', '')
 
-    # Get the hexadecimal representation of the hash
+    map_bytes = json.dumps(map_object, sort_keys=True).encode()
+    hash_object = hashlib.sha256(map_bytes)
     map_hash = hash_object.hexdigest()
-    print(map_hash)
+
     folder = os.path.join("maps", map_hash)
     os.makedirs(folder, exist_ok=True)
 
@@ -217,31 +215,56 @@ def save_image():
                 'image': image,
                 'style': style,
             })
-    # remove 'data:image/png;base64,' from the start of the data URL
-    image_data = image_data.replace('data:image/png;base64,', '')
-    # decode the base64 data to bytes
 
+    image_data = image_data.replace('data:image/png;base64,', '')
     image_bytes = base64.b64decode(image_data)
     image = Image.open(BytesIO(image_bytes))
 
-    identifier = data.get('identifier', '')
-    def callback(step=1, timestamp=0, latent=None, place_in_line=0):
-        progress = step / generate_images.NUM_STEPS
-        socketio.emit('progress', {'progress': progress, 'identifier': identifier, 'place_in_line': place_in_line})
-    generated_background = generate_images.getBackground(promt, image, callback=callback)[0]
-    uid = uuid.uuid1()
-    file_name = f'{folder}/background_image_{uid}.png'
-    generated_background.save(file_name)
-    with open (f'{folder}/{uid}_style.json', 'w') as f:
-        f.write(json.dumps(style))
+    if "started" not in in_progress_generations[identifier]:
 
-    # image.save(f'{folder}/prompt_image.png')
-    with open(f'{folder}/map.json', 'w') as f:
-        f.write(json.dumps(map_object))
-    return jsonify({
-        'image': file_name,
-        'style': style,
-    })
+        def callback(step=1, timestamp=0, latent=None, place_in_line=0):
+            progress = step / generate_images.NUM_STEPS
+            in_progress_generations[identifier]["progress"] = progress
+            in_progress_generations[identifier]["place_in_line"] = place_in_line
+
+        def work():
+            generated_background = generate_images.getBackground(prompt, image, callback=callback)[0]
+            uid = uuid.uuid1()
+            file_name = f'{folder}/background_image_{uid}.png'
+            generated_background.save(file_name)
+            with open(f'{folder}/{uid}_style.json', 'w') as f:
+                f.write(json.dumps(style))
+            with open(f'{folder}/map.json', 'w') as f:
+                f.write(json.dumps(map_object))
+            in_progress_generations[identifier]["result"] = {
+                'image': file_name,
+                'style': style,
+            }
+        thread = threading.Thread(target=work)
+        thread.daemon = True
+        thread.start()
+        in_progress_generations[identifier]["started"] = True
+        return jsonify(success=True), 200
+
+    return jsonify(error="Image generation already in progress for this identifier."), 400
+
+
+@app.route('/poll_save_progress', methods=['POST'])
+def poll_save_progress():
+    data = request.get_json()
+    identifier = data.get('identifier', '')
+    if identifier in in_progress_generations:
+        if "result" in in_progress_generations[identifier]:
+            result = in_progress_generations[identifier]["result"]
+            del in_progress_generations[identifier]  # clean up after sending the result
+            return jsonify(result)
+        elif "progress" in in_progress_generations[identifier]:
+            return jsonify({
+                "progress": in_progress_generations[identifier]["progress"],
+                "place_in_line": in_progress_generations[identifier]["place_in_line"]
+            })
+    return jsonify(error="Invalid identifier."), 400
+
 
 @app.route('/create_random_map', methods=['GET'])
 def get_random_map():

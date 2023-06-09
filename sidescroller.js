@@ -714,13 +714,67 @@ document.addEventListener('DOMContentLoaded', (event) => {
   });
 
 
+  let pollInterval;
 
-function saveMapImage() {
-    // Create a temporary canvas and context
+  function newBackgroundReady(image, style) {
+    let img = new Image();
+    img.onload = function() {
+        newBackgroundImage = img;
+        animationProgress = 0;  // Start animation
+        changeBackgroundSound.cloneNode(true).play();
+    }
+    img.src = image;
+    currentImageStyle = style;
+    document.getElementById('progressContainer').style.display = "none";
+    setIsEditMode(false);
+    gameCanvas.focus();
+    document.getElementById('editButton').textContent = isEditMode ? "Play Game" : "Edit Map";
+    document.getElementById('progressBar').value = 100;
+    document.getElementById('progressStatus').textContent = '';
+    addURLParameter('map_name', image);
+  }
+
+  function pollServer(identifier) {
+      fetch('/poll_save_progress', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+              identifier: identifier
+          }),
+      })
+      .then(response => response.json())
+      .then(data => {
+          if (data.hasOwnProperty('image')) { // image saving is complete
+                clearInterval(pollInterval);
+                newBackgroundReady(data.image, data.style);
+
+          } else if (data.hasOwnProperty('progress')) { // still saving
+              let progress = data.progress;
+              let place_in_line = data.place_in_line;
+              let statusLabel = document.getElementById('progressStatus');
+  
+              if (place_in_line > 0) {
+                  statusLabel.textContent = `${place_in_line - 1} request(s) ahead of you.`;
+              } else {
+                  statusLabel.textContent = `Drawing. ${parseInt(progress * 100)}% complete.`;
+                  document.getElementById('progressBar').value = progress * 100;
+              }
+          }
+      })
+      .catch((error) => {
+          console.error('Error:', error);
+      });
+  }
+  
+  function saveMapImage() {
     document.getElementById('progressStatus').textContent = 'Submitted.';
     document.getElementById('progressContainer').style.display = "block";
     document.getElementById('progressBar').value = 3;
     const dataURL = getMapEditorImage();
+
+    let identifier = 'yourIdentifier';  // Assign your identifier here
 
     fetch('/save', {
         method: 'POST',
@@ -733,32 +787,23 @@ function saveMapImage() {
             mapData: cleanMap(gameMap),
             style: getCurrentStyle(),
             regenerate: currentImageStyle.style_name === getCurrentStyle().style_name,
-            identifier: identifier // Send the identifier
+            identifier: identifier
         }),
     })
     .then(response => response.json())
     .then(data => {
-        let img = new Image();
-        img.onload = function() {
-            newBackgroundImage = img;
-            animationProgress = 0;  // Start animation
-            changeBackgroundSound.cloneNode(true).play();
+        if (data.hasOwnProperty('image')) { // image already exists or saving is complete
+            newBackgroundReady(data.image, data.style);
+        } else if (data.hasOwnProperty('success')) { // need to start polling
+            pollInterval = setInterval(pollServer.bind(null, identifier), 1000);
         }
-        img.src = data.image;
-        currentImageStyle = data.style;
-        document.getElementById('progressContainer').style.display = "none";
-        setIsEditMode(false);
-        gameCanvas.focus();
-        document.getElementById('editButton').textContent = isEditMode ? "Play Game" : "Edit Map";
-        document.getElementById('progressBar').value = 100;
-        document.getElementById('progressStatus').textContent = '';
-        addURLParameter('map_name', data.image);
-        
     })
     .catch((error) => {
-    console.error('Error:', error);
+        console.error('Error:', error);
     });
 }
+
+  
 
 // hop to random style
 function hopToRandomStyle() {
@@ -767,21 +812,7 @@ function hopToRandomStyle() {
     saveMapImage();
 }
 
-// Listen for the 'progress' event
-socket.on('progress', function(data) {
-    if (data.identifier === identifier) {
-        let place_in_line = data.place_in_line;
-        let statusLabel = document.getElementById('progressStatus');
-        if (place_in_line > 0) {
-            statusLabel.textContent = `${place_in_line - 1} request(s) ahead of you.`;
-        } else {
-            // Update your progress bar
-            let progress = data.progress;
-            statusLabel.textContent = `Drawing. ${parseInt(progress * 100)}% complete.`;
-            document.getElementById('progressBar').value = progress * 100;
-        }
-    }
-});
+
 
 let i = 0;
 let last_measure = Date.now();
