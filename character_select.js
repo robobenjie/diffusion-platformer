@@ -10,7 +10,7 @@ export function setChangeSpriteCallback(callback) {
 }
 
 let currentGeneratingPlayer;
-let identifier = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+let identifier = null;
 
 let character_options = null;
 export function randomizePlayerSprite() {
@@ -142,6 +142,8 @@ document.getElementById('submitCharacter').addEventListener('click', function(ev
     event.preventDefault();
     document.getElementById('CharacterProgressStatus').textContent = 'Submitted.';
     document.getElementById('CharacterProgressBar').value = 3;
+    identifier = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+
 
     fetch('/generate_character', {
         method: 'POST',
