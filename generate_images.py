@@ -82,12 +82,13 @@ def getBackground(prompt, image, callback=None, num_steps=NUM_STEPS):
 
 
 def generateCharacters(prompt, num=1, callback=None):
+    waiting_on_character_callbacks.insert(0, callback)
+    notifyCharacterCreationQueue()
     if characterPipe is None:
         createCharacterPipe()
     
     prompt = prompt + " PixelartRSS"
-    waiting_on_character_callbacks.insert(0, callback)
-    notifyCharacterCreationQueue()
+
     with characterCreationLock:
       images = [characterPipe(prompt, num_inference_steps=CHARACTER_NUM_STEPS, callback=callback).images[0] for _ in range(num)]
     waiting_on_character_callbacks.pop()
