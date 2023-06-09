@@ -795,7 +795,7 @@ function gameLoop() {
         let fps = 100 / ((now - last_measure) / 1000);
         last_measure = now;
         i = 0;
-        document.getElementById("fps").textContent = `${parseInt(fps)} fps, ${dt * targetFPS}`;
+        document.getElementById("fps").textContent = `${parseInt(fps)} fps, ${player.vx}`;
     }
     if (isEditMode) {
         document.getElementById("edit-tools").style.display = "block";
