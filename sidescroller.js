@@ -363,6 +363,9 @@ function updatePlayer(currentPlayer, otherPlayers, dt) {
         respawnPlayer(currentPlayer);
         return
     }
+    if (isColliding(currentPlayer.x, currentPlayer.y, 0)) {
+        respawnPlayer(currentPlayer);
+    }
     const gemX = Math.floor(currentPlayer.x / tileSize);
     const gemY = Math.floor(currentPlayer.y / tileSize);
     if (gameMap[gemY][gemX] === 2) {
