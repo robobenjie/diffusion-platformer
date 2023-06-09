@@ -10,7 +10,7 @@ from diffusers import DPMSolverMultistepScheduler
 import uuid
 
 NUM_STEPS = 10
-CHARACTER_NUM_STEPS = 20
+CHARACTER_NUM_STEPS = 25
 
 
 PROMPT_TEMPLATE = "Vector art, {user_prompt}, Overdetailed art, (masterpiece:1.2) (illustration:1.2) (best quality:1.2) (cinematic lighting) (sharp focus) (2D)"
