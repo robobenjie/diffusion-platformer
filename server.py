@@ -27,6 +27,8 @@ CORS(app)
 
 styles = []
 
+in_progress_generations = defaultdict(dict)
+
 @app.route('/')
 def index():
     return app.send_static_file('index.html')
@@ -116,14 +118,32 @@ def generate_character():
     data = request.get_json()
     prompt = data.get('prompt', 'videogame character')
     identifier = data.get('identifier', '')
-    def callback(step=1, timestamp=0, latent=None, place_in_line=0):
-        progress = step / generate_images.CHARACTER_NUM_STEPS
-        socketio.emit('progress', {'progress': progress, 'identifier': identifier, 'place_in_line': place_in_line})
-    names = generate_images.generateCharacters(prompt, num=4, callback=callback)
-    return jsonify([{
-        'right': f'characters/{name}.png',  
-        'left': f"characters/{name}_left.png"
-    } for name in names])
+
+    if "character_names" in in_progress_generations[identifier]:
+        return jsonify([{
+            'right': f'characters/{name}.png',  
+            'left': f"characters/{name}_left.png"
+        } for name in in_progress_generations[identifier]["character_names"]])
+    
+    if "started" not in in_progress_generations[identifier]:
+
+        def callback(step=1, timestamp=0, latent=None, place_in_line=0):
+            progress = step / generate_images.CHARACTER_NUM_STEPS
+            in_progress_generations[identifier]["progress"] = progress
+            in_progress_generations[identifier]["place_in_line"] = place_in_line
+        def work():
+            in_progress_generations[identifier]["character_names"] = generate_images.generateCharacters(prompt, num=4, callback=callback)
+        thread = threading.Thread(target=work)
+        thread.daemon = True
+        thread.start()
+        in_progress_generations[identifier]["started"] = True
+        return jsonify(success=True), 200
+    if "progress" in in_progress_generations[identifier]:
+        return jsonify({
+            "progress": in_progress_generations[identifier]["progress"],
+            "place_in_line": in_progress_generations[identifier]["place_in_line"]
+        })
+    return jsonify(success=True), 200
 
 def load_styles():
     global styles

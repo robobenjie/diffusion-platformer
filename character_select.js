@@ -100,27 +100,49 @@ document.getElementById('cancelCharacter').addEventListener('click', function() 
   document.getElementById('generateCharacterModal').classList.remove('is-active');
 });
 
-// Listen for the 'progress' event
-socket.on('progress', function(data) {
-    if (data.identifier === identifier) {
-        let place_in_line = data.place_in_line;
-        let statusLabel = document.getElementById('CharacterProgressStatus');
-        if (place_in_line > 0) {
-            statusLabel.textContent = `${place_in_line - 1} request(s) ahead of you.`;
-        } else {
-            // Update your progress bar
+let pollInterval;
+
+function pollServer(identifier) {
+    fetch('/generate_character', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            identifier: identifier
+        }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.length) { // character images are ready
+            clearInterval(pollInterval);
+            document.getElementById('CharacterProgressBar').value = 100;
+            setSpriteOptions(data);
+            document.getElementById('CharacterProgressStatus').textContent = '';
+        } else if (data.hasOwnProperty('progress')) { // still generating
             let progress = data.progress;
-            statusLabel.textContent = `Drawing. ${parseInt(progress * 100)}% complete.`;
-            document.getElementById('CharacterProgressBar').value = progress * 100;
+            let place_in_line = data.place_in_line;
+            let statusLabel = document.getElementById('CharacterProgressStatus');
+
+            if (place_in_line > 0) {
+                statusLabel.textContent = `${place_in_line - 1} request(s) ahead of you.`;
+            } else {
+                statusLabel.textContent = `Drawing. ${parseInt(progress * 100)}% complete.`;
+                document.getElementById('CharacterProgressBar').value = progress * 100;
+            }
         }
-    }
-});
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
+}
 
 document.getElementById('submitCharacter').addEventListener('click', function(event) {
     // Prevent the form from being submitted
     event.preventDefault();
     document.getElementById('CharacterProgressStatus').textContent = 'Submitted.';
     document.getElementById('CharacterProgressBar').value = 3;
+
     fetch('/generate_character', {
         method: 'POST',
         headers: {
@@ -128,16 +150,19 @@ document.getElementById('submitCharacter').addEventListener('click', function(ev
         },
         body: JSON.stringify({
             prompt: document.getElementById('characterDescription').value,
-            identifier: identifier // Send the identifier
+            identifier: identifier
         }),
     })
-    .then(response => response.json())
-    .then(data => {
-        document.getElementById('CharacterProgressBar').value = 100;
-        setSpriteOptions(data);
-        document.getElementById('CharacterProgressStatus').textContent = '';
+    .then(response => {
+        if (response.ok) {
+            // Start polling server every second
+            pollInterval = setInterval(pollServer.bind(null, identifier), 1000);
+        } else {
+            console.error('Error:', response.statusText);
+        }
     })
     .catch((error) => {
-    console.error('Error:', error);
+        console.error('Error:', error);
     });
 });
+
