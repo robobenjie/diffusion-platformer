@@ -396,7 +396,7 @@ function updatePlayer(currentPlayer, otherPlayers, dt) {
         gameMap[gemY][gemX] = 0;
         currentPlayer.score += 1;
         pointsSinceHop += 1;
-        if (pointsSinceHop >= 20) {
+        if (pointsSinceHop >= 20 && replayMode === "none") {
             pointsSinceHop = 0;
             hopToRandomStyle();
 
@@ -828,7 +828,7 @@ document.getElementById("challengeEndAcknowledgeButton").addEventListener("click
 
 function getChallengeEndMessage(currentPlayer, otherPlayer) {
     if (currentPlayer.score > otherPlayer.score) {
-        return "You won!" + currentPlayer.score + " to " + otherPlayer.score + ". Message them and gloat! Or record a new challenge.";
+        return "You won! " + currentPlayer.score + " to " + otherPlayer.score + ". Message them and gloat! Or record a new challenge.";
     } else if (currentPlayer.score < otherPlayer.score) {
         return "You lost. Bummer.";
     } else {
