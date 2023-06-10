@@ -206,7 +206,7 @@ def save_image():
     folder = os.path.join("maps", map_hash)
     os.makedirs(folder, exist_ok=True)
 
-    if not data.get('regenerate', False):
+    if not data.get('regenerate', False) and style.get('style_name', '') != "Custom":
         image = get_map_for_style(folder, style)
         if image:
             return jsonify({
