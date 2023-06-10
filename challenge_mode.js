@@ -1,26 +1,119 @@
 import { getGems, clearGems, spawnGem} from './level_edit.js';
 
 let recordingPlayer = null;
+let player = null;
+let player2 = null;
 // Your recording frequency
 const frequency = 20; // 10 Hz
 const interval = 1000 / frequency; // Interval in milliseconds
 const recordingLength = 30; // 30 seconds
+export let replayMode = "None";
 
 let recordingData = [];
 
-document.getElementById("cancelChallengeButton").addEventListener("click", function() {
-    document.getElementById("challengeModalStart").classList.remove('is-active');
-});
-document.getElementById("openChallengeModal").addEventListener("click", function() {
-    document.getElementById("challengeModalStart").classList.add('is-active');
-});
-
-document.getElementById("closeChallengeModal").addEventListener("click", function() {
-    document.getElementById("challengeModalStart").classList.remove('is-active');
-});
-
 let copyChallengeButton = document.getElementById('copyChallengeButton');
 let copiedChallengeMessage = document.getElementById('copiedChallengeMessage');
+
+document.addEventListener('DOMContentLoaded', (event) => {
+    let deletes = Array.from(document.getElementsByClassName('delete'));
+    let modals = Array.from(document.getElementsByClassName('modal'));
+  
+    deletes.forEach((deleteElement) => {
+      deleteElement.addEventListener('click', function() {
+        modals.forEach((modal) => {
+          modal.classList.remove('is-active');
+          document.getElementById('gameCanvas').focus();
+        });
+      });
+    });
+
+    document.getElementById("cancelChallengeButton").addEventListener("click", function() {
+        document.getElementById("challengeModalStart").classList.remove('is-active');
+    });
+    document.getElementById("openChallengeModal").addEventListener("click", function() {
+        document.getElementById("challengeModalStart").classList.add('is-active');
+    });
+    
+    document.getElementById("closeChallengeModal").addEventListener("click", function() {
+        document.getElementById("challengeModalStart").classList.remove('is-active');
+    });
+    
+    document.getElementById("recordChallengeButton").addEventListener("click", function () {
+        document.getElementById("challengeModalStart").classList.remove('is-active');
+        replayMode = "record";
+        startRecording();
+    });
+
+    closeShareChallengeModal.addEventListener('click', function() {
+        shareChallengeModal.classList.remove('is-active');
+    });
+    
+    closeShareChallengeModalFooter.addEventListener('click', function() {
+        shareChallengeModal.classList.remove('is-active');
+    });
+    
+
+    document.getElementById("RetryChallengeButton").addEventListener("click", startChallenge);
+    document.getElementById("PlayChallengeButton").addEventListener("click", startChallenge);
+    document.getElementById("challengeEndAcknowledgeButton").addEventListener("click", endChallenge);
+
+  });
+
+
+
+export function loadChallenge() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('challenge_id')) {
+        fetch('/load_challenge', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                challenge_id: urlParams.get('challenge_id')
+            }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+            setRecording(data.challenge_data);
+            document.getElementById("challengeNotificationModal").classList.add('is-active');
+        });
+    }
+}
+
+function startChallenge() {
+    replayMode = "playback";
+    simulatePlayerActions(null, player2);
+    player.score = 0;
+    player2.score = 0;
+    document.getElementById("challengeNotificationModal").classList.remove('is-active');
+    document.getElementById("challengeEndModal").classList.remove('is-active');
+    document.getElementById('gameCanvas').focus();
+}
+
+
+
+function endChallenge() {
+    let challengeEndModal = document.getElementById('challengeEndModal');
+    challengeEndModal.classList.remove('is-active');
+    replayMode = "None";
+    player.score = 0;
+    player2.score = 0;
+    document.getElementById('gameCanvas').focus();
+}
+
+
+export function getChallengeEndMessage(currentPlayer, otherPlayer) {
+    if (currentPlayer.score > otherPlayer.score) {
+        return "You won! " + currentPlayer.score + " to " + otherPlayer.score + ". Message them and gloat! Or record a new challenge.";
+    } else if (currentPlayer.score < otherPlayer.score) {
+        return "You lost. " + currentPlayer.score + " to " + otherPlayer.score + ". Bummer. Retry?";
+    } else {
+        return "It's a tie!";
+    }
+}
+
 
 copyChallengeButton.addEventListener('click', function() {
     let textarea = document.createElement('textarea');
@@ -59,22 +152,15 @@ function openShareChallengeModal(challenge_id) {
     shareChallengeModal.classList.add('is-active');
 };
 
-closeShareChallengeModal.addEventListener('click', function() {
-    shareChallengeModal.classList.remove('is-active');
-});
-
-closeShareChallengeModalFooter.addEventListener('click', function() {
-    shareChallengeModal.classList.remove('is-active');
-});
-
-
 
 export function setRecording(recording) {
     recordingData = recording;
 }
 
- export function setRecordingPlayer(player) {
-    recordingPlayer = player;
+ export function setRecordingPlayer(primaryPlayer, opponent) {
+    recordingPlayer = primaryPlayer;
+    player = primaryPlayer;
+    player2 = opponent;
  }
  // On button click
  export function startRecording() {
@@ -172,6 +258,8 @@ export function simulatePlayerActions(recordedActions, player) {
             console.log('Simulation ended');
             let challengeEndModal = document.getElementById('challengeEndModal');
             challengeEndModal.classList.add('is-active');
+            document.getElementById('gameCanvas').blur();
+            challengeEndModal.focus();
         }
     }, interval);
 }

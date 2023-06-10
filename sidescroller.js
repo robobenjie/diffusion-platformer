@@ -2,11 +2,12 @@ import { isEditMode, tileSize, gameMap, mapHeight, mapWidth, setMap, loadStyles,
      drawMap, setMapChangeCallback, setIsEditMode, getCurrentStyle, styles, setStyle, getMapEditorImage,
      saveAllStyleImages, cleanMap, spawnGem} from './level_edit.js';
 import { setChangeSpriteCallback, randomizePlayerSprite } from './character_select.js';
-import { setRecordingPlayer, simulatePlayerActions, startRecording, setRecording, setBackgroundImage} from './challenge_mode.js';
+import { setRecordingPlayer, simulatePlayerActions, startRecording, setRecording, setBackgroundImage, getChallengeEndMessage, replayMode,
+loadChallenge} from './challenge_mode.js';
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
-let replayMode = "None";
+
 
 let dieSound = new Audio('/sounds/pop.wav');
 let gemSound = new Audio('/sounds/coin.mp3');
@@ -47,25 +48,8 @@ window.onload = function() {
     } else {
         document.getElementById("playGameButton").style.display = "flex";
     }
-    if (urlParams.get('challenge_id')) {
-        fetch('/load_challenge', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                challenge_id: urlParams.get('challenge_id')
-            }),
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log(data);
-            replayMode = "playback";
-            setRecording(data.challenge_data);
-            document.getElementById("challengeNotificationModal").classList.add('is-active');
-        });
-    }
-    
+
+    loadChallenge();    
 
     let map_promise = fetch('/get_map', {
         method: 'POST',
@@ -101,7 +85,7 @@ window.onload = function() {
     randomizePlayerSprite(1);
     randomizePlayerSprite(2);
     loadStyles();
-    setRecordingPlayer(player);
+    setRecordingPlayer(player, player2);
 }
 
 
@@ -396,7 +380,7 @@ function updatePlayer(currentPlayer, otherPlayers, dt) {
         gameMap[gemY][gemX] = 0;
         currentPlayer.score += 1;
         pointsSinceHop += 1;
-        if (pointsSinceHop >= 20 && replayMode === "none") {
+        if (pointsSinceHop >= 20 && replayMode === "None") {
             pointsSinceHop = 0;
             hopToRandomStyle();
 
@@ -798,43 +782,6 @@ function hopToRandomStyle() {
 
 let last_measure = Date.now();
 let lastLoopTime = Date.now();
-
-document.getElementById("recordChallengeButton").addEventListener("click", function () {
-    document.getElementById("challengeModalStart").classList.remove('is-active');
-    replayMode = "record";
-    startRecording();
-});
-
-document.getElementById("PlayChallengeButton").addEventListener("click", function () {
-    replayMode = "playback";
-    simulatePlayerActions(null, player2);
-    player.score = 0;
-    player2.score = 0;
-    document.getElementById("challengeNotificationModal").classList.remove('is-active');
-    canvas.focus();
-});
-
-document.getElementById("challengeEndAcknowledgeButton").addEventListener("click", function () {
-    let challengeEndModal = document.getElementById('challengeEndModal');
-    challengeEndModal.classList.remove('is-active');
-    replayMode = "none";
-    respawnPlayer(player);
-    respawnPlayer(player2);
-    player.score = 0;
-    player2.score = 0;
-
-});
-
-
-function getChallengeEndMessage(currentPlayer, otherPlayer) {
-    if (currentPlayer.score > otherPlayer.score) {
-        return "You won! " + currentPlayer.score + " to " + otherPlayer.score + ". Message them and gloat! Or record a new challenge.";
-    } else if (currentPlayer.score < otherPlayer.score) {
-        return "You lost. Bummer.";
-    } else {
-        return "It's a tie!";
-    }
-}
 
 let i = 0;
 function gameLoop() {
