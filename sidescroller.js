@@ -35,6 +35,18 @@ let pointsSinceHop = 0;
 window.onload = function() {
     const urlParams = new URLSearchParams(window.location.search);
     console.log("Map name", urlParams.get('map_name'));
+
+    if (urlParams.get('map_name')) {
+
+        var elements = document.getElementsByClassName("hideable");
+        for(var i = 0; i < elements.length; i++) {
+            elements[i].style.display = "block";
+        }
+    } else {
+        document.getElementById("playGameButton").style.display = "flex";
+    }
+
+
     let map_promise = fetch('/get_map', {
         method: 'POST',
         headers: {
@@ -67,15 +79,7 @@ window.onload = function() {
 
     randomizePlayerSprite(1);
     randomizePlayerSprite(2);
-
-    let style_promise = loadStyles();
-
-    /*Promise.all([map_promise, style_promise, collectible_promise]).then(values => {
-        // at this point, both the map and styles are loaded
-        let mapDataImage = values[0].image; 
-        let folder = mapDataImage.split('/').slice(0, 2).join('/');
-        saveAllStyleImages(folder);  // call your method that needs both map and styles
-    });*/
+    loadStyles();
 }
 
 

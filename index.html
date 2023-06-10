@@ -9,19 +9,44 @@
         canvas {
             display: block;
             margin: auto;
-            background-color: skyblue;
+            background-color: rgb(31, 46, 52);
         }
     </style>
     <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon_io/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon_io/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon_io/favicon-16x16.png">
     <link rel="manifest" href="/images/favicon_io/site.webmanifest"> 
+    <style>
+        .hideable {
+            display: none;
+        }
+        /* Make a button huge by increasing its font size and padding */
+        .button.is-huge {
+            font-size: 2em;
+            padding: 20px 30px;
+        }
+        
+        /* Center a block element */
+        .is-center {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 10vh; /* This is to center vertically, you can adjust it as per your need */
+        }
+    </style>
 </head>
 <body>
     <section class="section">
         <div class="container">
             <h1 class="title">Dimension Hopper</h1>
-            <div id="scores" class="mt-4">
+            <br>
+            <div class="box">
+                <canvas id="gameCanvas" width="800" height="400" tabindex="0"></canvas>
+            </div>
+            <div class="is-center" id="playGameButton", style="display: none;">
+                <a href="/?map_name=random" class="button is-success is-huge mt-1">Play Game!</a>
+            </div>
+            <div id="scores" class="mt-4 hideable">
                 <div class="columns">
                     <div class="column">
                         <div class="box">
@@ -62,27 +87,28 @@
                 </div>
             </div>
             <br>
-            <div class="box">
-                <canvas id="gameCanvas" width="800" height="400" tabindex="0"></canvas>
-            </div>
-            <br>
-            <div class="field has-addons">
-                <div class="control is-expanded">
-                    <select id="styleDropdown" class="input"></select>
-                </div>
-                <div class="control">
-                    <button id="downloadButton" class="button is-link">Dimension Hop!</button>
+            <div class="hideable">
+                <div class="field has-addons">
+                    <div class="control is-expanded">
+                        <select id="styleDropdown" class="input"></select>
+                    </div>
+                    <div class="control">
+                        <button id="downloadButton" class="button is-link">Dimension Hop!</button>
+                    </div>
                 </div>
             </div>
-            <span id="progressStatus" style="display: block;"> .</span>
-            <div class="progress is-small" id="progressContainer" display="None">
-                <progress class="progress is-primary" value="0" id="progressBar" max="100">0%</progress>
+            <div class="hideable">
+                <span id="progressStatus" style="display: block;"> .</span>
+                <div class="progress is-small" id="progressContainer" display="None">
+                    <progress class="progress is-primary" value="0" id="progressBar" max="100">0%</progress>
 
+                </div>
             </div>
-            <a href="/?map_name=random" class="button is-success mt-4">Random Level</a>
-            <button id="editButton" class="button is-info mt-4">Edit Map</button>
-            <button id="shareButton" class="button is-info mt-4">Share Level</button>
-
+            <div class="hideable">
+                <a href="/?map_name=random" class="button is-success mt-4">Random Level</a>
+                <button id="editButton" class="button is-info mt-4">Edit Map</button>
+                <button id="shareButton" class="button is-info mt-4">Share Level</button>
+            </div>
     
             <div id="edit-tools" style="display: none;">
                 <p>Click to edit map. Hold shift for larger areas.</p>
