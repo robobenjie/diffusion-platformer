@@ -438,8 +438,16 @@ function updatePlayer(currentPlayer, otherPlayers, dt) {
         currentPlayer.isJumping = false;
         currentPlayer.vy = 0;
     } else if (isColliding(currentPlayer.x, currentPlayer.y - currentPlayer.size / 2, collisionBoxWidthFraction * currentPlayer.size)) { // Ceiling collision
-        currentPlayer.y = Math.ceil((currentPlayer.y - currentPlayer.size / 2) / tileSize) * tileSize + currentPlayer.size / 2;
-        currentPlayer.vy = 0.01 * targetFPS; // Math.Min(0, currentPlayer.vy);
+        // If we are close to a corner, move the player to the side
+        const jump_buffer = (collisionBoxWidthFraction + 0.5) * currentPlayer.size;
+        if (!currentPlayer.moveRight && !isColliding(currentPlayer.x - jump_buffer, currentPlayer.y - currentPlayer.size / 2, collisionBoxWidthFraction * currentPlayer.size)) {
+            currentPlayer.x -= jump_buffer;
+        } else if (!currentPlayer.moveLeft && !isColliding(currentPlayer.x + jump_buffer, currentPlayer.y - currentPlayer.size / 2, collisionBoxWidthFraction * currentPlayer.size)) {
+            currentPlayer.x += jump_buffer;
+        } else {
+            currentPlayer.y = Math.ceil((currentPlayer.y - currentPlayer.size / 2) / tileSize) * tileSize + currentPlayer.size / 2;
+            currentPlayer.vy = 0.01 * targetFPS; // Math.Min(0, currentPlayer.vy);
+        }
     }
 }
 
