@@ -4,7 +4,7 @@ let recordingPlayer = null;
 // Your recording frequency
 const frequency = 20; // 10 Hz
 const interval = 1000 / frequency; // Interval in milliseconds
-const recordingLength = 10; // 30 seconds
+const recordingLength = 30; // 30 seconds
 
 let recordingData = [];
 
