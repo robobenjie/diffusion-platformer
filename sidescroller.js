@@ -1,10 +1,12 @@
 import { isEditMode, tileSize, gameMap, mapHeight, mapWidth, setMap, loadStyles,
      drawMap, setMapChangeCallback, setIsEditMode, getCurrentStyle, styles, setStyle, getMapEditorImage,
-     saveAllStyleImages} from './level_edit.js';
+     saveAllStyleImages, cleanMap, spawnGem} from './level_edit.js';
 import { setChangeSpriteCallback, randomizePlayerSprite } from './character_select.js';
+import { setRecordingPlayer, simulatePlayerActions, startRecording, setRecording, setBackgroundImage} from './challenge_mode.js';
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
+let replayMode = "None";
 
 let dieSound = new Audio('/sounds/pop.wav');
 let gemSound = new Audio('/sounds/coin.mp3');
@@ -15,7 +17,7 @@ const collisionBoxWidthFraction = 0.5;
 // Constants for gem spawning
 const minGemSpawn = 1; // Minimum seconds between gem spawns
 const maxGemSpawn = 5; // Maximum seconds between gem spawns
-const maxGemCount = 4; // Maximum number of gems on the screen at once
+
 // Initialize lastGemSpawn to the current time
 
 const targetFPS = 165;
@@ -45,7 +47,25 @@ window.onload = function() {
     } else {
         document.getElementById("playGameButton").style.display = "flex";
     }
-
+    if (urlParams.get('challenge_id')) {
+        fetch('/load_challenge', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                challenge_id: urlParams.get('challenge_id')
+            }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+            replayMode = "playback";
+            setRecording(data.challenge_data);
+            document.getElementById("challengeNotificationModal").classList.add('is-active');
+        });
+    }
+    
 
     let map_promise = fetch('/get_map', {
         method: 'POST',
@@ -60,6 +80,7 @@ window.onload = function() {
     .then(data => {
         setMap(data.map);
         backgroundImage.src = data.image;
+        setBackgroundImage(backgroundImage);
         respawnPlayer(player);
         respawnPlayer(player2);
         gameCanvas.focus();
@@ -80,6 +101,7 @@ window.onload = function() {
     randomizePlayerSprite(1);
     randomizePlayerSprite(2);
     loadStyles();
+    setRecordingPlayer(player);
 }
 
 
@@ -586,40 +608,6 @@ function keyupHandler (event) {
     if (event.key === 'd') player2.moveRight = false;
 };
 
-function getGemCount() {
-    let count = 0;
-    for (let i = 0; i < mapHeight; i++) {
-        for (let j = 0; j < mapWidth; j++) {
-            if (gameMap[i][j] === 2) {
-                count++;
-            }
-        }
-    }
-    return count;
-}
-
-function spawnGem() {
-    if (getGemCount() >= maxGemCount) {
-        return;
-    }
-    let validLocations = [];
-
-    // Loop through each tile in the game map
-    for (let x = 0; x < mapWidth; x++) {
-        for (let y = 0; y < mapHeight - 1; y++) {
-            // Check if the current tile and the tile below meet the criteria for a gem
-            if (gameMap[y][x] === 0 && gameMap[y + 1][x] === 1) {
-                // If they do, add the location to the array
-                validLocations.push({x: x, y: y});
-            }
-        }
-    }
-    // If there are any valid locations, choose one at random
-    if (validLocations.length > 0) {
-        let location = validLocations[Math.floor(Math.random() * validLocations.length)];
-        gameMap[location.y][location.x] = 2;
-    }
-}
 
 function updateScoreDisplay() {
     document.getElementById('scorePlayer1').textContent = `Score: ${player.score}`;
@@ -646,21 +634,6 @@ document.getElementById("downloadButton").addEventListener("click", function() {
     saveMapImage();
 });
 
-function cleanMap(gameMap) {
-    // Create a deep copy of gameMap
-    let copiedMap = JSON.parse(JSON.stringify(gameMap));
-    
-    for (let i = 0; i < copiedMap.length; i++) {
-        for (let j = 0; j < copiedMap[i].length; j++) {
-            if (copiedMap[i][j] === 2) {
-                copiedMap[i][j] = 0;
-            }
-        }
-    }
-    return copiedMap;
-}
-
-let identifier = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 
 function addURLParameter(paramName, paramValue) {
     let currentURL = new URL(window.location.href);
@@ -727,6 +700,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
   let pollInterval;
 
   function newBackgroundReady(image, style) {
+    setBackgroundImage(image)
     let img = new Image();
     img.onload = function() {
         newBackgroundImage = img;
@@ -822,10 +796,47 @@ function hopToRandomStyle() {
 }
 
 
-
-let i = 0;
 let last_measure = Date.now();
 let lastLoopTime = Date.now();
+
+document.getElementById("recordChallengeButton").addEventListener("click", function () {
+    document.getElementById("challengeModalStart").classList.remove('is-active');
+    replayMode = "record";
+    startRecording();
+});
+
+document.getElementById("PlayChallengeButton").addEventListener("click", function () {
+    replayMode = "playback";
+    simulatePlayerActions(null, player2);
+    player.score = 0;
+    player2.score = 0;
+    document.getElementById("challengeNotificationModal").classList.remove('is-active');
+    canvas.focus();
+});
+
+document.getElementById("challengeEndAcknowledgeButton").addEventListener("click", function () {
+    let challengeEndModal = document.getElementById('challengeEndModal');
+    challengeEndModal.classList.remove('is-active');
+    replayMode = "none";
+    respawnPlayer(player);
+    respawnPlayer(player2);
+    player.score = 0;
+    player2.score = 0;
+
+});
+
+
+function getChallengeEndMessage(currentPlayer, otherPlayer) {
+    if (currentPlayer.score > otherPlayer.score) {
+        return "You won!" + currentPlayer.score + " to " + otherPlayer.score + ". Message them and gloat! Or record a new challenge.";
+    } else if (currentPlayer.score < otherPlayer.score) {
+        return "You lost. Bummer.";
+    } else {
+        return "It's a tie!";
+    }
+}
+
+let i = 0;
 function gameLoop() {
     let loopStart = Date.now();
     let dt = (loopStart - lastLoopTime) / 1000;
@@ -844,19 +855,34 @@ function gameLoop() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         renderBackgroundImage(ctx, dt);
         render_gems(ctx);
-        updatePlayer(player, [player2], dt);
-        updatePlayer(player2, [player], dt);
+        if (replayMode === "None") {
+            updatePlayer(player, [player2], dt);
+            updatePlayer(player2, [player], dt);
+            drawPlayer(player);
+            drawPlayer(player2);
+        } else if (replayMode === "record") {
+            updatePlayer(player, [], dt);
+            drawPlayer(player);
+        } else if (replayMode === "playback") {
+            updatePlayer(player, [], dt);
+            updatePlayer(player2, [], dt);
+            drawPlayer(player);
+            drawPlayer(player2);
+            document.getElementById('challengeEndMessage').textContent = getChallengeEndMessage(player, player2);
+        }
+        if (replayMode !== "playback") {
+            const now = Date.now();
+            if (now - lastGemSpawn > ((Math.random() * (maxGemSpawn - minGemSpawn) + minGemSpawn) * 1000)) {
+                spawnGem();
+                lastGemSpawn = now;
+            }
+        }
+
         updateParticles(dt);
-        drawPlayer(player);
-        drawPlayer(player2);
         drawParticles(ctx);
         renderForegroundImageParts(ctx, backgroundImage);
         updateScoreDisplay();
-        const now = Date.now();
-        if (now - lastGemSpawn > ((Math.random() * (maxGemSpawn - minGemSpawn) + minGemSpawn) * 1000)) {
-            spawnGem();
-            lastGemSpawn = now;
-        }
+
     }
     lastLoopTime = loopStart;
 

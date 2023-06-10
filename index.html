@@ -108,6 +108,8 @@
                 <a href="/?map_name=random" class="button is-success mt-4">Random Level</a>
                 <button id="editButton" class="button is-info mt-4">Edit Map</button>
                 <button id="shareButton" class="button is-info mt-4">Share Level</button>
+                <button id="openChallengeModal" class="button is-info mt-4">Record a Challenge</button>
+                
             </div>
     
             <div id="edit-tools" style="display: none;">
@@ -167,6 +169,7 @@
             </div>
             <div id="fps" style="display: none;"></div>
         </div>
+
         <!-- Share Level Modal -->
         <div class="modal" id="shareModal">
             <div class="modal-background"></div>
@@ -186,6 +189,83 @@
             </footer>
             </div>
         </div>
+
+        <!-- Record Challenge Modal -->
+
+        <div class="modal"  id="challengeModalStart">
+            <div class="modal-background"></div>
+            <div class="modal-card">
+              <header class="modal-card-head">
+                <p class="modal-card-title">Send a challenge to a friend</p>
+                <button class="delete" aria-label="close" id="closeChallengeModal"></button>
+              </header>
+              <section class="modal-card-body">
+                <p>Get as many gems as you can in 60 seconds. Then we'll give you a link you can send to a friend to play against a recording of you.</p>
+              </section>
+              <footer class="modal-card-foot">
+                <button class="button is-success" id="recordChallengeButton">Let's go</button>
+                <button class="button" id="cancelChallengeButton">Cancel</button>
+              </footer>
+            </div>
+          </div>
+
+        <!-- Share Challenge Modal -->
+        <div class="modal" id="shareChallengeModal">
+            <div class="modal-background"></div>
+            <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title">Send Your Challenge!</p>
+                <button class="delete" aria-label="close" id="closeShareChallengeModal"></button>
+            </header>
+            <section class="modal-card-body">
+                <!-- Content -->
+                <p id="shareChallengeLink"></p>
+            </section>
+            <footer class="modal-card-foot">
+                <button class="button is-success" id="copyChallengeButton">Copy</button>
+                <button class="button" id="closeShareChallengeModalFooter">Close</button>
+                <span id="copiedChallengeMessage"></span>
+            </footer>
+            </div>
+        </div>
+
+        <!-- Play Challenge Modal -->
+        <div class="modal" id="challengeNotificationModal">
+            <div class="modal-background"></div>
+            <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title">You've been challenged! Get as many gems as you can!</p>
+                <button class="delete" aria-label="close" id="closeChallengeNotificationModal"></button>
+            </header>
+            <section class="modal-card-body">
+                <!-- Content -->
+                <p id="challengeNotificationMessage">Get ready to compete! Use the arrow keys to move</p>
+            </section>
+            <footer class="modal-card-foot">
+                <button class="button is-success" id="PlayChallengeButton">Let's Play</button>
+            </footer>
+            </div>
+        </div>
+
+        <!-- Challenge End Modal -->
+        <div class="modal" id="challengeEndModal">
+            <div class="modal-background"></div>
+            <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title">Challenge Over!</p>
+                <button class="delete" aria-label="close" id="closeChallengeEndModal"></button>
+            </header>
+            <section class="modal-card-body">
+                <!-- Content -->
+                <p id="challengeEndMessage"></p>
+            </section>
+            <footer class="modal-card-foot">
+                <button class="button is-success" id="challengeEndAcknowledgeButton">OK</button>
+            </footer>
+            </div>
+        </div>
+
+
 
         <!-- Change Character Modal -->
         <div class="modal" id="generateCharacterModal">
@@ -254,5 +334,6 @@
     </section>
     <script src="level_edit.js" type="module"></script>
     <script src="character_select.js" type="module"></script>
+    <script src="challenge_mode.js" type="module"></script>
     <script src="sidescroller.js" type="module"></script>
 </body>

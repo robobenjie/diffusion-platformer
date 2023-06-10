@@ -64,6 +64,23 @@ let isMouseDown = false;
 let action = null;
 let shiftDown = false;
 
+export function getGems() {
+    let gems = [];
+
+    // Iterate over the gameMap
+    for (let y = 0; y < gameMap.length; y++) {
+        for (let x = 0; x < gameMap[y].length; x++) {
+            // If the cell contains a gem (represented by 2)
+            if (gameMap[y][x] === 2) {
+                // Add the gem to the list of gems
+                gems.push({ x: x, y: y });
+            }
+        }
+    }
+
+    return gems;
+}
+
 canvas.addEventListener("mousedown", function(event) {
     if (!isEditMode) return;
     isMouseDown = true;
@@ -152,6 +169,68 @@ function randomizeMap() {
     .catch((error) => {
       console.error('Error:', error);
     });
+}
+
+export function cleanMap(gameMap) {
+    // Create a deep copy of gameMap
+    let copiedMap = JSON.parse(JSON.stringify(gameMap));
+    
+    for (let i = 0; i < copiedMap.length; i++) {
+        for (let j = 0; j < copiedMap[i].length; j++) {
+            if (copiedMap[i][j] === 2) {
+                copiedMap[i][j] = 0;
+            }
+        }
+    }
+    return copiedMap;
+}
+
+/*********************
+ * Gems              *
+ * ******************/
+const maxGemCount = 4; // Maximum number of gems on the screen at once
+
+function getGemCount() {
+    let count = 0;
+    for (let i = 0; i < mapHeight; i++) {
+        for (let j = 0; j < mapWidth; j++) {
+            if (gameMap[i][j] === 2) {
+                count++;
+            }
+        }
+    }
+    return count;
+}
+
+export function clearGems() {
+    gameMap = cleanMap(gameMap);
+}
+
+export function spawnGem(x, y) {
+    if (x && y) {
+        gameMap[y][x] = 2;
+        return;
+    }
+    if (getGemCount() >= maxGemCount) {
+        return;
+    }
+    let validLocations = [];
+
+    // Loop through each tile in the game map
+    for (let x = 0; x < mapWidth; x++) {
+        for (let y = 0; y < mapHeight - 1; y++) {
+            // Check if the current tile and the tile below meet the criteria for a gem
+            if (gameMap[y][x] === 0 && gameMap[y + 1][x] === 1) {
+                // If they do, add the location to the array
+                validLocations.push({x: x, y: y});
+            }
+        }
+    }
+    // If there are any valid locations, choose one at random
+    if (validLocations.length > 0) {
+        let location = validLocations[Math.floor(Math.random() * validLocations.length)];
+        gameMap[location.y][location.x] = 2;
+    }
 }
 
 

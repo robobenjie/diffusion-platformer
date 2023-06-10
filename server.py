@@ -189,6 +189,21 @@ def save_style_maps():
             image.save(f)
     return jsonify(success=True), 200
 
+@app.route('/save_challenge', methods=['POST'])
+def save_challenge():
+    data = request.get_json()
+    challenge_id = uuid.uuid4().hex
+    with open(f'challenges/{challenge_id}.json', 'w') as f:
+        json.dump(data, f)
+    return jsonify(challenge_id=challenge_id, success=True), 200
+
+@app.route('/load_challenge', methods=['POST'])
+def load_challenge():
+    data = request.get_json()
+    challenge_id = data.get('challenge_id', '')
+    with open(f'challenges/{challenge_id}.json') as f:
+        challenge_data = json.load(f)
+    return jsonify(challenge_data=challenge_data, success=True), 200
 
 @app.route('/save', methods=['POST'])
 def save_image():
