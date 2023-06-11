@@ -1,6 +1,6 @@
 import os
 import numpy as np
-from flask import Flask, send_from_directory, request, jsonify
+from flask import Flask, send_from_directory, request, jsonify, redirect, url_for
 from flask_cors import CORS
 import random
 import base64
@@ -13,7 +13,8 @@ import random
 import uuid
 import argparse
 import threading
-import time
+from flask import render_template
+import glob
 
 
 import generate_images
@@ -30,6 +31,62 @@ in_progress_generations = defaultdict(dict)
 @app.route('/')
 def index():
     return app.send_static_file('index.html')
+
+@app.route('/images')
+def images():
+    page = request.args.get('page', default=1, type=int)
+    images, has_next = get_images(page)
+
+    return render_template('images.html', images=images, page=page, has_next=has_next)
+
+
+def get_images(page):
+    image_dir = 'maps'  # Directory where your images are stored
+    images_per_page = 50
+
+    all_images = []
+    folders = glob.glob(os.path.join(image_dir, '*'))
+    
+    for folder in folders:
+        if not os.path.isdir(folder):
+            continue  # Skip non-directory files
+        
+        folder_name = os.path.basename(folder)
+        image_files = glob.glob(os.path.join(folder, '*.png'))
+        
+        for image_file in image_files:
+            image_name = os.path.splitext(os.path.basename(image_file))[0]
+            image_path = os.path.relpath(image_file, image_dir)
+            image_url = f'/maps/{image_path}'  # Adjust the URL path as per your Flask routes
+            all_images.append({
+                'name': image_name,
+                'url': image_url,
+                'path': image_path
+            })
+
+    # Paginate the images
+    start_index = (page - 1) * images_per_page
+    end_index = start_index + images_per_page
+    paginated_images = all_images[start_index:end_index]
+
+    # Determine if there are more images
+    has_next = end_index < len(all_images)
+
+    return paginated_images, has_next
+
+
+@app.route('/process_images', methods=['POST'])
+def process_images():
+    selected_images = request.form.getlist('selected_images')
+    # Append selected_images to featatured.txt
+    with open('featured.txt', 'a') as f:
+        for image in selected_images:
+            f.write(image + '\n')
+    # Redirect to the next page URL
+    current_page = request.form.get('page', default=1, type=int)
+    next_page = current_page + 1
+    return redirect(url_for('images', page=next_page))
+
 
 def allowed_file(filename):
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}

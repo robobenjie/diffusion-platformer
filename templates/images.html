@@ -1,0 +1,52 @@
+<!-- images.html -->
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.3/css/bulma.min.css">
+
+
+<section class="section">
+  <div class="container">
+    <form action="{{ url_for('process_images') }}" method="POST">
+      <div class="columns is-multiline">
+        {% for image in images %}
+          <div class="column is-one-quarter">
+            <div class="card">
+              <div class="card-image">
+                <figure class="image is-4by3">
+                  <img src="{{ image.url }}" alt="{{ image.name }}">
+                </figure>
+              </div>
+              <div class="card-content">
+                <div class="content">
+                  <label class="checkbox">
+                    <input type="checkbox" class="image-checkbox" name="selected_images" value="{{ image.path }}"">
+                    {{ image.name }}
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+      <input type="hidden" name="page" value="{{ page }}">
+      <input type="submit" value="Submit" class="button is-primary">
+      {% if has_next %}
+      <a href="{{ url_for('images', page=page+1) }}" class="button is-primary">Next</a>
+      {% endif %}
+      </form>
+      <script>
+        document.addEventListener("DOMContentLoaded", function() {
+          // Get all the image elements
+          var imageElements = document.querySelectorAll('img');
+      
+          // Attach click event listeners to toggle the checkbox when the image is clicked
+          for (var i = 0; i < imageElements.length; i++) {
+            var image = imageElements[i];
+            image.addEventListener('click', function() {
+              var checkbox = this.parentElement.parentElement.nextElementSibling.querySelector('.image-checkbox');
+              checkbox.checked = !checkbox.checked;
+            });
+          }
+        });
+      </script>      
+  </div>
+</section>
