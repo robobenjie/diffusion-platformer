@@ -145,7 +145,8 @@ def random_map(logo=False):
         with open('featured.txt', 'r') as f:
             featured_images = f.read().splitlines()
         if featured_images:  # Check if the list is not empty
-            image_path = random.choice(featured_images)
+            image_path = "maps/" + random.choice(featured_images)
+            print("image_path", image_path)
             if os.path.exists(image_path):
                 # Construct the response and return
                 map_data = {}
@@ -154,7 +155,7 @@ def random_map(logo=False):
                         map_data = json.load(f)
                 except (FileNotFoundError, json.JSONDecodeError):
                     print(f'Error loading map for {image_path}')
-                style = get_style(*image_path.rsplit("/", 2)[1:])  # Assuming get_style takes directory and filename
+                style = get_style(*os.path.split(image_path))  # Assuming get_style takes directory and filename
                 return jsonify({
                     'map': map_data,
                     'image': image_path,
