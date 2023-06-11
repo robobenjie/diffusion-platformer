@@ -27,6 +27,7 @@ CORS(app)
 styles = []
 
 in_progress_generations = defaultdict(dict)
+mod_password="password"
 
 @app.route('/')
 def index():
@@ -35,14 +36,16 @@ def index():
 @app.route('/images')
 def images():
     page = request.args.get('page', default=1, type=int)
+    curation = request.args.get('curation', default="", type=str)
     images, has_next = get_images(page)
 
-    return render_template('images.html', images=images, page=page, has_next=has_next)
+    return render_template('images.html', images=images, page=page, has_next=has_next, curation=(curation == mod_password))
 
 
 def get_images(page):
+
     image_dir = 'maps'  # Directory where your images are stored
-    images_per_page = 50
+    images_per_page = 60
 
     all_images = []
     folders = glob.glob(os.path.join(image_dir, '*'))
@@ -77,6 +80,9 @@ def get_images(page):
 
 @app.route('/process_images', methods=['POST'])
 def process_images():
+    return redirect(url_for('images'))
+
+    # Re-enable this after fixing password stuff
     selected_images = request.form.getlist('selected_images')
     # Append selected_images to featatured.txt
     with open('featured.txt', 'a') as f:
@@ -382,6 +388,7 @@ if __name__ == "__main__":
     parser.add_argument('--debug', action='store_true', help='Start the app in debug mode')
     parser.add_argument('--port', type=int, help='Specify the port number to use')
     parser.add_argument('--background-render', dest='background_render', action='store_true', help='Render images in the background')
+    parser.add_argument('--mod_password', type=str, help='Password for mod pages')
     parser.set_defaults(background_render=False)
     parser.set_defaults(port=8000)
     args = parser.parse_args()

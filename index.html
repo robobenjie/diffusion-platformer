@@ -107,11 +107,12 @@
 
                 </div>
             </div>
-            <div class="hideable">
-                <a href="/?map_name=random" class="button is-success mt-4">Random Level</a>
+            <div class="hideable"> 
                 <button id="editButton" class="button is-info mt-4">Edit Map</button>
                 <button id="shareButton" class="button is-info mt-4">Share Level</button>
                 <button id="openChallengeModal" class="button is-info mt-4">Record a Challenge</button>
+                <a href="/?map_name=random" class="button is-success mt-4">Random Level</a>
+                <a href="/images" class="button is-success mt-4">Gallery</a>
                 
             </div>
     
@@ -171,6 +172,42 @@
                 <br>
             </div>
             <div id="fps" style="display: none;"></div>
+            <section class="section">
+                <h3 class="subtitle">
+                  What even is this thing?
+                </h3>
+                <p>
+                    It's a game! Collect the treasure and jump on the other guy's head. The game play is inspired by memories of crowding 4 people around a single keyboard to play a game
+                    called Jump 'n Bump, which we played for hours in middle school, even though it only had a single level. I wanted to 
+                    recapture that feeling. I've also always loved games with level editors, and I wanted to make the act of creating a new 
+                    level to play together as fun as possible.
+                </p>
+                <br>
+                <p> 
+                    This is also a hobby project built to explore the limits of using Stable Diffusion to illustrate levels for a 2D platformer
+                    dynamically. The idea is that you can create a level by drawing a simple black and white image, and then the AI will illustrate
+                    it for you. There are lots of places you can get AI to draw a picture for you, but I wanted to see if I could get it to draw
+                    something with a specific structure that would show the important information you need to actually play the game.
+                </p>
+                <br>
+                <p> 
+                    Its hosted on AWS 
+                    and because AI is hungry for GPU, the instance costs me $12 a day, so this game might not be around forever (I'd not turn
+                    down <a href="https://account.venmo.com/u/Benjie-Holson">donations to keep the server on longer</a>, especially as recently transistioned
+                    Google Roboticist to  
+                    <a href="https://generalrobots.substack.com/p/why-build-a-robot-company"> unpaid blogger</a> and hobbiest gamedev). 
+                </p>
+                <br>
+                <p>
+                    Huge thanks to Aaron Mandle for helping me with AWS, python environment, cuda, pytorth, nginx and many others. You can read
+                    the code if you really want to <a href="https://github.com/robobenjie/diffusion-platformer/tree/master"> here</a>. I still have
+                    plans for improvements, big and small, so stick around and see what happens.
+                </p>
+                <br>
+                <p>
+                    -Benjie
+                </p>
+              </section>
         </div>
 
         <!-- Share Level Modal -->

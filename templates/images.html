@@ -1,38 +1,70 @@
 <!-- images.html -->
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.3/css/bulma.min.css">
-
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gallery</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+<link rel="apple-touch-icon" sizes="180x180" href="/images/favicon_io/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/images/favicon_io/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/images/favicon_io/favicon-16x16.png">
+<link rel="manifest" href="/images/favicon_io/site.webmanifest">
+<meta property="og:image" content="https://dimensionhopper.com/logo_maps/171fbeb54115bb935774fcad53b172e871d33991d90f0574aa20d99d344d0167/background_image_834413b8-0072-11ee-b996-00155d01dc50.png">
+<meta property="og:image:width" content="800">
+<meta property="og:image:height" content="544">
+</head>
 
 <section class="section">
   <div class="container">
+    <h1 class="title">Gallery</h1>
+    {% if curation %}
     <form action="{{ url_for('process_images') }}" method="POST">
+    {% endif %}
       <div class="columns is-multiline">
         {% for image in images %}
           <div class="column is-one-quarter">
             <div class="card">
               <div class="card-image">
-                <figure class="image is-4by3">
+                <figure class="image">
+                  {% if curation %}
                   <img src="{{ image.url }}" alt="{{ image.name }}">
+                  {% else %}
+                  <a href="{{ url_for('index', map_name='maps/' + image.path) }}">
+                    <img src="{{ image.url }}" alt="{{ image.name }}">
+                  </a>
+                  {% endif %}
                 </figure>
-              </div>
-              <div class="card-content">
-                <div class="content">
-                  <label class="checkbox">
-                    <input type="checkbox" class="image-checkbox" name="selected_images" value="{{ image.path }}"">
-                    {{ image.name }}
-                  </label>
+                {% if curation %}
+                <div class="card-content">
+                    <div class="content">
+                      <label class="checkbox">
+                        <input type="checkbox" class="image-checkbox" name="selected_images" value="{{ image.path }}"">
+                        {{ image.name }}
+                      </label>
+                    </div>
                 </div>
+                {% endif %}
               </div>
             </div>
           </div>
         {% endfor %}
       </div>
+      {% if curation %}
       <input type="hidden" name="page" value="{{ page }}">
       <input type="submit" value="Submit" class="button is-primary">
-      {% if has_next %}
-      <a href="{{ url_for('images', page=page+1) }}" class="button is-primary">Next</a>
       {% endif %}
-      </form>
+      {% if has_next %}
+      {% if page > 1 %}
+        <a href="{{ url_for('images', page=page-1, curation=curation) }}" class="button is-primary">Previous</a>
+      {% endif %}
+      <a href="{{ url_for('images', page=page+1, curation=curation) }}" class="button is-primary">Next</a>
+      {% endif %}
+    {% if curation %}
+    </form>
+    {% endif %}
+  </div>
+</section>
+<section>
+  <div>
       <script>
         document.addEventListener("DOMContentLoaded", function() {
           // Get all the image elements
