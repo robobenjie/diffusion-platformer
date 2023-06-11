@@ -123,11 +123,39 @@ def get_map():
         print(f'Error loading map {folder}')
         return random_map(logo=True)
 
+import os
+import json
+import random
+from flask import jsonify
+
 def random_map(logo=False):
     if logo:
         base_dir = 'logo_maps'
     else:
         base_dir = 'maps'
+    
+    # Check if featured.txt exists
+    if not logo and os.path.exists('featured.txt'):
+        with open('featured.txt', 'r') as f:
+            featured_images = f.read().splitlines()
+        if featured_images:  # Check if the list is not empty
+            image_path = random.choice(featured_images)
+            if os.path.exists(image_path):
+                # Construct the response and return
+                map_data = {}
+                try:
+                    with open(f'{image_path.rsplit("/", 1)[0]}/map.json') as f:
+                        map_data = json.load(f)
+                except (FileNotFoundError, json.JSONDecodeError):
+                    print(f'Error loading map for {image_path}')
+                style = get_style(*image_path.rsplit("/", 2)[1:])  # Assuming get_style takes directory and filename
+                return jsonify({
+                    'map': map_data,
+                    'image': image_path,
+                    'style': style,
+                })
+
+    # Fallback to old behavior
     map_dirs = os.listdir(base_dir)
     choices = []
     for map_dir in map_dirs:
@@ -146,6 +174,7 @@ def random_map(logo=False):
     except (FileNotFoundError, IndexError):
         print(f'Error loading map {random_dir}')
         return random_map()
+
 
 @app.route('/random_collectible', methods=['GET'])
 def random_collectible():
