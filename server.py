@@ -146,7 +146,6 @@ def random_map(logo=False):
             featured_images = f.read().splitlines()
         if featured_images:  # Check if the list is not empty
             image_path = "maps/" + random.choice(featured_images)
-            print("image_path", image_path)
             if os.path.exists(image_path):
                 # Construct the response and return
                 map_data = {}
