@@ -54,7 +54,7 @@ document.getElementById('refreshCharacters').addEventListener('click', function(
 
 function setSpriteOptions(options) {
     let characterImages = document.getElementsByClassName('character-image');
-    for (let i = 0; i < characterImages.length; i++) {
+    for (let i = 0; i < options.length; i++) {
         characterImages[i].src = options[i].portrait;
         characterImages[i].addEventListener('click', function() {
             setPlayerSprite(currentGeneratingPlayer, options[i].left, options[i].right, options[i].portrait);
