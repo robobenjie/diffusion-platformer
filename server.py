@@ -197,9 +197,9 @@ def random_character():
     num = data.get('num_requested', 1)
     ret = []
     for _ in range(num):
-        rights = [f for f in files if not f.endswith('left.png')]
+        rights = [f for f in files if not f.endswith('left.png') and not f.endswith('portrait.png')]
         right = random.choice(rights)
-        ret.append({"right": f'characters/{right}', "left": f"characters/{right.replace('.png', '_left.png')}"})
+        ret.append({"right": f'characters/{right}', "left": f"characters/{right.replace('.png', '_left.png')}", "portrait": f"characters/{right.replace('.png', '_portrait.png')}"})
     return jsonify(ret)
 
 # Generate new character
@@ -212,17 +212,21 @@ def generate_character():
     if "character_names" in in_progress_generations[identifier]:
         return jsonify([{
             'right': f'characters/{name}.png',  
-            'left': f"characters/{name}_left.png"
+            'left': f"characters/{name}_left.png",
+            'portrait': f"characters/{name}_portrait.png"
         } for name in in_progress_generations[identifier]["character_names"]])
     
     if "started" not in in_progress_generations[identifier]:
-
-        def callback(step=1, timestamp=0, latent=None, place_in_line=0):
-            progress = step / generate_images.CHARACTER_NUM_STEPS
+        def callback1(step=1, timestamp=0, latent=None, place_in_line=0):
+            progress = step / (generate_images.CHARACTER_NUM_STEPS * 2)
+            in_progress_generations[identifier]["progress"] = progress
+            in_progress_generations[identifier]["place_in_line"] = place_in_line
+        def callback2(step=1, timestamp=0, latent=None, place_in_line=0):
+            progress = (step + generate_images.CHARACTER_NUM_STEPS) / (generate_images.CHARACTER_NUM_STEPS * 2)
             in_progress_generations[identifier]["progress"] = progress
             in_progress_generations[identifier]["place_in_line"] = place_in_line
         def work():
-            in_progress_generations[identifier]["character_names"] = generate_images.generateCharacters(prompt, num=4, callback=callback)
+            in_progress_generations[identifier]["character_names"] = generate_images.generateCharacters(prompt, num=1, callback=callback1, callback2=callback2)
         thread = threading.Thread(target=work)
         thread.daemon = True
         thread.start()

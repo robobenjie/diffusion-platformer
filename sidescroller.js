@@ -599,15 +599,15 @@ function updateScoreDisplay() {
 }
 
 
-function setPlayerSprite(currentGeneratingPlayer, left, right) {
+function setPlayerSprite(currentGeneratingPlayer, left, right, portrait) {
     if(parseInt(currentGeneratingPlayer) === 1) {
         player.rightSprite.src = right;
         player.leftSprite.src = left;
-        document.getElementById('player-sprite-1').src = right;
+        document.getElementById('player-sprite-1').src = portrait;
     } else {
         player2.rightSprite.src = right;
         player2.leftSprite.src = left;
-        document.getElementById('player-sprite-2').src = right;
+        document.getElementById('player-sprite-2').src = portrait;
     }
 }
 

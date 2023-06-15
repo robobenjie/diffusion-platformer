@@ -24,8 +24,8 @@ export function randomizePlayerSprite() {
     })
     .then(response => response.json())
     .then(data => {
-        setPlayerSprite(1, data[0].left, data[0].right);
-        setPlayerSprite(2, data[1].left, data[1].right);
+        setPlayerSprite(1, data[0].left, data[0].right, data[0].portrait);
+        setPlayerSprite(2, data[1].left, data[1].right, data[1].portrait);
         character_options = data.slice(-4);
         setSpriteOptions(character_options);
     });
@@ -55,9 +55,9 @@ document.getElementById('refreshCharacters').addEventListener('click', function(
 function setSpriteOptions(options) {
     let characterImages = document.getElementsByClassName('character-image');
     for (let i = 0; i < characterImages.length; i++) {
-        characterImages[i].src = options[i].right;
+        characterImages[i].src = options[i].portrait;
         characterImages[i].addEventListener('click', function() {
-            setPlayerSprite(currentGeneratingPlayer, options[i].left, options[i].right);
+            setPlayerSprite(currentGeneratingPlayer, options[i].left, options[i].right, options[i].portrait);
             document.getElementById('generateCharacterModal').classList.remove('is-active');
             document.getElementById('gameCanvas').focus();
         });

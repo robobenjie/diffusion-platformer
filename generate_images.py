@@ -1,10 +1,11 @@
 import diffusers
 import cv2
 import threading
-from PIL import Image, ImageOps
+from PIL import Image, ImageOps, ImageEnhance
 import numpy as np
 from diffusers import StableDiffusionControlNetPipeline, ControlNetModel
 from diffusers import StableDiffusionPipeline
+from diffusers import StableDiffusionImg2ImgPipeline
 import torch
 from diffusers import DPMSolverMultistepScheduler
 import uuid
@@ -35,14 +36,25 @@ def createLevelPipe():
     pipe.scheduler = DPMSolverMultistepScheduler.from_config(pipe.scheduler.config)
 
 
+
+
+
 characterPipe = None
+characterPortraitPipe = None
 def createCharacterPipe():
-    global characterPipe
+    global characterPipe, characterPortraitPipe
     model_id = "Onodofthenorth/SD_PixelArt_SpriteSheet_Generator"
     characterPipe = StableDiffusionPipeline.from_pretrained(model_id, torch_dtype=torch.float16)
     characterPipe.enable_model_cpu_offload()
     characterPipe.enable_xformers_memory_efficient_attention()
     characterPipe.safety_checker = lambda images, clip_input: (images, [False] * len(images))
+    characterPortraitPipe = StableDiffusionImg2ImgPipeline.from_pretrained(
+        "./models/childrensIllustration/", torch_dtype=torch.float16, use_safetensors=True
+    )#.to("cuda")
+    characterPortraitPipe.enable_model_cpu_offload()
+    characterPortraitPipe.enable_xformers_memory_efficient_attention()
+    characterPortraitPipe.scheduler = DPMSolverMultistepScheduler.from_config(characterPortraitPipe.scheduler.config)
+    characterPortraitPipe.safety_checker = lambda images, clip_input: (images, [False] * len(images))
     #characterPipe = characterPipe.to("cuda")
 
 def notifyBackgroundCreationQueue():
@@ -83,21 +95,42 @@ def getBackground(prompt, image, callback=None, num_steps=NUM_STEPS):
     return output.images
 
 
-def generateCharacters(prompt, num=1, callback=None):
+def generateCharacters(prompt, num=1, callback=None, callback2=None):
+    if callback is None:
+        callback = lambda *args, **kwargs: None
+    if callback2 is None:
+        callback2 = lambda *args, **kwargs: None
     waiting_on_character_callbacks.insert(0, callback)
     notifyCharacterCreationQueue()
-
     
-    prompt = prompt + " PixelartRSS"
+    sprite_prompt = "PixelartRSS " + prompt
 
     with characterCreationLock:
         if characterPipe is None:
             createCharacterPipe()
-        images = [characterPipe(prompt, num_inference_steps=CHARACTER_NUM_STEPS, callback=callback).images[0] for _ in range(num)]
+        images = [characterPipe(sprite_prompt, num_inference_steps=CHARACTER_NUM_STEPS, callback=callback).images[0] for _ in range(num)]
     waiting_on_character_callbacks.pop()
     notifyBackgroundCreationQueue()
     names = []
+
+    generator = torch.Generator(device="cpu").manual_seed(55)
+    full_prompt = f"bright chibi portrait of {prompt} on white background, Overdetailed art, (masterpiece:1.2) (illustration:1.2) (best quality:1.2) (cinematic lighting) (sharp focus) (2D)"
+    neg_prompt = "topless, nsfw, naked, (dark) (lowpoly) (CG) (bokeh) (3d:1.5) (blurry) (duplicate) (watermark) (label) (signature) (frames) (text), (worst quality:1.2), (low quality:1.2), (normal quality:1.2), lowres, normal quality, ((monochrome)), ((grayscale))"
+
+
     for image in images:
+        image = make_white(image, 50)
+        if np.random.random() < 0.5:
+            crop = image.crop((512 / 4, 512 * .3, 512/2, 512 * 4/5))
+        else:
+            crop = image.crop((0, 512 * .25, 512/4, 512 * 4/5))
+        init_image = make_square_and_resize(crop, 512, estimate_background_color(image))
+        portraits = characterPortraitPipe(prompt=full_prompt, negative_prompt=neg_prompt, image=init_image, strength=0.51, guidance_scale=10, generator=generator, callback=callback2)
+        portrait = portraits[0][0]
+        filter = ImageEnhance.Brightness(portrait)
+        portrait = filter.enhance(1.3)
+        filter = ImageEnhance.Contrast(portrait)
+        portrait = filter.enhance(1.1)
         name= uuid.uuid4()
         names.append(name)
         transparent_edges = make_transparent(image, 50)
@@ -105,6 +138,7 @@ def generateCharacters(prompt, num=1, callback=None):
         mirrored_image = ImageOps.mirror(transparent_edges)
         mirrored_image.save(f'./characters/{name}_left.png')
         transparent_edges.save(f"./characters/{name}.png")
+        portrait.save(f"./characters/{name}_portrait.png")
     return names
 
 
@@ -143,5 +177,39 @@ def make_transparent(img, tolerance):
 
     img.putdata(newData)
     return img
+
+def make_white(img, tolerance):
+    datas = img.getdata()
+
+    # Estimate background color
+    background_color = estimate_background_color(img)
+    
+    newData = []
+    for item in datas:
+        # change all pixels that are similar to background color to transparent
+        if np.all([abs(x - y) < tolerance for x, y in zip(item[:3], background_color)]):
+            newData.append((255, 255, 255))
+        else:
+            newData.append(item)
+
+    img.putdata(newData)
+    return img
+
+
+def make_square_and_resize(img, size, background_color):
+    width, height = img.size
+
+    if width == height:
+        return img.resize((size, size))
+
+    elif width > height:
+        result = Image.new(img.mode, (width, width), background_color)
+        result.paste(img, (0, (width - height) // 2))
+    else:
+        result = Image.new(img.mode, (height, height), background_color)
+        result.paste(img, ((height - width) // 2, 0))
+
+    return result.resize((size, size))
+
 
 
