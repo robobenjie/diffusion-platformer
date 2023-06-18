@@ -64,6 +64,8 @@ let isMouseDown = false;
 let action = null;
 let shiftDown = false;
 
+let altDown = false;
+
 export function getGems() {
     let gems = [];
 
@@ -89,11 +91,15 @@ canvas.addEventListener("mousedown", function(event) {
     const y = Math.floor((event.clientY - rect.top) / tileSize);
 
     action = gameMap[y][x] === 0 ? 1 : 0;
+    if (altDown) {
+        action = 3;
+    }
     gameMap[y][x] = action;
 
     if(shiftDown) applyToArea(x, y, action);
     
     drawMap(ctx);
+    console.log(gameMap)
 }, false);
 
 canvas.addEventListener("mousemove", function(event) {
@@ -116,11 +122,17 @@ document.addEventListener('keydown', function(event) {
     if (event.key === 'Shift') {
         shiftDown = true;
     }
+    if (event.key === 'Alt') {
+        altDown = true;
+    }
 }, false);
 
 document.addEventListener('keyup', function(event) {
     if (event.key === 'Shift') {
         shiftDown = false;
+    }
+    if (event.key === 'Alt') {
+        altDown = false;
     }
 }, false);
 
@@ -508,6 +520,38 @@ function drawBlock(tmpCtx, i, j, color) {
     tmpCtx.fillRect(j * tileSize, i * tileSize, tileSize, tileSize);
 }
 
+function drawSpikes(tmpCtx, i, j, numSpikes, spikeHeightFraction, color) {
+    tmpCtx.fillStyle = color;
+
+    // Calculate the width of each spike based on the number of spikes
+    const spikeWidth = tileSize / numSpikes;
+
+    // Calculate the height of each spike based on the height fraction
+    const spikeHeight = tileSize * spikeHeightFraction;
+
+    for(let k = 0; k < numSpikes; k++) {
+        // Calculate the x and y position for the start of this spike
+        const spikeX = j * tileSize + k * spikeWidth;
+        const spikeY = (i + 1) * tileSize; // The y position is at the bottom of the tile
+
+        // Start the path for the spike
+        tmpCtx.beginPath();
+        // Move to the bottom left corner of the spike
+        tmpCtx.moveTo(spikeX, spikeY);
+        // Draw line to the top of the spike (the point)
+        tmpCtx.lineTo(spikeX + spikeWidth / 2, spikeY - spikeHeight);
+        // Draw line to the bottom right corner of the spike
+        tmpCtx.lineTo(spikeX + spikeWidth, spikeY);
+        // Close the path
+        tmpCtx.closePath();
+
+        // Fill the spike with the chosen color
+        tmpCtx.fill();
+    }
+}
+
+
+
 
 function interpolateColors(startColor, endColor, steps) {
     let start = {
@@ -632,7 +676,10 @@ export function drawMap(tmpCtx, wallColor = '#989898', topColor = '#dfdfdf') {
                     // Use the drawJaggedLine function to draw each side of the rectangle
                     drawBlock(tmpCtx, i, j, wallColor);
                 }
-            }
+            } else if (gameMap[i][j] === 3) {
+                console.log("drawing spikes at:" + i + " " + j)
+                drawSpikes(tmpCtx, i, j, 5, 0.7, topColor);
+            }        
         }
     }
 
