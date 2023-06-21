@@ -49,6 +49,7 @@ def get_images(page):
 
     all_images = []
     folders = glob.glob(os.path.join(image_dir, '*'))
+    folders.sort(key=os.path.getctime, reverse=True)
     
     for folder in folders:
         if not os.path.isdir(folder):
